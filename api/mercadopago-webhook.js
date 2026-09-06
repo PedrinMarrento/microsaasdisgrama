@@ -24,17 +24,25 @@ export default async function handler(req, res) {
     const subscription = await mpResponse.json();
 
     if (!mpResponse.ok) {
-      console.error(subscription);
-      return res.status(200).json({ ok: true });
+      console.error("Erro Mercado Pago:", subscription);
+
+      return res.status(200).json({
+        ok: true
+      });
     }
 
     const userId = subscription.external_reference;
 
     if (!userId) {
-      return res.status(200).json({ ok: true });
+      console.error("Assinatura sem external_reference.");
+
+      return res.status(200).json({
+        ok: true
+      });
     }
 
-    const isPro = subscription.status === "authorized";
+    const isPro =
+      subscription.status === "authorized";
 
     const supabaseResponse = await fetch(
       `${process.env.SUPABASE_URL}/rest/v1/profiles?id=eq.${userId}`,
@@ -43,7 +51,10 @@ export default async function handler(req, res) {
 
         headers: {
           "Content-Type": "application/json",
-          apikey: process.env.SUPABASE_SERVICE_ROLE_KEY,
+
+          apikey:
+            process.env.SUPABASE_SERVICE_ROLE_KEY,
+
           Authorization:
             `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`
         },
@@ -64,18 +75,22 @@ export default async function handler(req, res) {
     );
 
     if (!supabaseResponse.ok) {
+      const supabaseError =
+        await supabaseResponse.text();
+
       console.error(
-        "Erro Supabase:",
-        await supabaseResponse.text()
+        "Erro ao atualizar Supabase:",
+        supabaseError
       );
     }
 
     return res.status(200).json({
-      ok: true
+      ok: true,
+      status: subscription.status
     });
 
   } catch (error) {
-    console.error(error);
+    console.error("Erro no webhook:", error);
 
     return res.status(200).json({
       ok: true
