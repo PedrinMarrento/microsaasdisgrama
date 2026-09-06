@@ -11,7 +11,7 @@ let allClients = [];
 async function loadClients() {
   const user = await getSessionUser();
 
-  if (!user) return;
+  
 
   const { data, error } = await supabaseClient
     .from("clients")
@@ -96,6 +96,36 @@ async function saveProposal(status) {
     alert("Preencha título, valor e descrição.");
     return;
   }
+  const { data: profile, error: profileError } = await supabaseClient
+  .from("profiles")
+  .select("plan, proposal_limit")
+  .eq("id", user.id)
+  .single();
+
+if (profileError) {
+  console.error(profileError);
+  alert("Erro ao verificar seu plano.");
+  return;
+}
+
+if (profile.plan === "free") {
+
+  const { count, error: countError } = await supabaseClient
+    .from("proposals")
+    .select("*", { count: "exact", head: true })
+    .eq("user_id", user.id);
+
+  if (countError) {
+    console.error(countError);
+    alert("Erro ao verificar seu limite.");
+    return;
+  }
+
+  if (count >= profile.proposal_limit) {
+    alert("Você atingiu o limite de 5 propostas do plano Grátis.");
+    return;
+  }
+}
 
   const { data, error } = await supabaseClient
     .from("proposals")
