@@ -39,6 +39,8 @@ export default async function handler(req, res) {
 
           back_url:
             "https://microsaasdisgrama.vercel.app/planos.html",
+            notification_url:
+  "https://microsaasdisgrama.vercel.app/api/mercadopago-webhook",
 
           status: "pending"
         })
