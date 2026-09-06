@@ -6,7 +6,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { email } = req.body;
+    const { email, userId } = req.body;
 
     if (!email) {
       return res.status(400).json({
