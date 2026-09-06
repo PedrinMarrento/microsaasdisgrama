@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Planos — PropostaFlow</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body class="app-page">
+
+  <aside class="sidebar">
+    <a class="logo" href="dashboard.html">
+      Proposta<span>Flow</span>
+    </a>
+
+    <nav>
+      <a href="dashboard.html">▦ Dashboard</a>
+      <a href="clientes.html">👥 Clientes</a>
+      <a href="propostas.html">📝 Propostas</a>
+      <a href="nova-proposta.html">＋ Nova proposta</a>
+      <a href="empresa.html">⚙️ Minha Empresa</a>
+      <a class="active" href="planos.html">★ Planos</a>
+    </nav>
+
+    <button id="logoutBtn" class="sidebar-logout">Sair</button>
+  </aside>
+
+  <main class="app-main">
+
+    <div class="app-header">
+      <div>
+        <p class="eyebrow">ASSINATURA</p>
+        <h1>Escolha seu plano</h1>
+        <p>Comece grátis e faça upgrade quando precisar.</p>
+      </div>
+    </div>
+
+    <div class="pricing-grid">
+
+      <section class="card pricing-card">
+        <p class="eyebrow">GRÁTIS</p>
+
+        <h2>R$ 0</h2>
+        <p>por mês</p>
+
+        <hr>
+
+        <p>✓ Até 5 propostas</p>
+        <p>✓ Cadastro de clientes</p>
+        <p>✓ Link público</p>
+        <p>✓ Envio por WhatsApp</p>
+        <p>✓ PDF</p>
+
+        <button class="btn btn-ghost" disabled>
+          Plano atual
+        </button>
+      </section>
+
+      <section class="card pricing-card pro-plan">
+        <p class="eyebrow">PRO</p>
+
+        <h2>R$ 29,90</h2>
+        <p>por mês</p>
+
+        <hr>
+
+        <p>✓ Propostas ilimitadas</p>
+        <p>✓ Clientes ilimitados</p>
+        <p>✓ Link público</p>
+        <p>✓ WhatsApp</p>
+        <p>✓ PDF profissional</p>
+        <p>✓ Personalização da empresa</p>
+
+        <button id="upgradeBtn" class="btn btn-primary">
+          Assinar Pro
+        </button>
+      </section>
+
+    </div>
+
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase.js"></script>
+  <script src="js/common.js"></script>
+
+</body>
+</html>
