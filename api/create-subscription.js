@@ -1,4 +1,4 @@
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({
       error: "Método não permitido"
@@ -8,9 +8,9 @@ export default async function handler(req, res) {
   try {
     const { email, userId } = req.body;
 
-    if (!email) {
+    if (!email || !userId) {
       return res.status(400).json({
-        error: "E-mail obrigatório"
+        error: "Dados obrigatórios não enviados"
       });
     }
 
@@ -23,23 +23,27 @@ export default async function handler(req, res) {
           "Content-Type": "application/json",
           Authorization:
             `Bearer ${process.env.MERCADO_PAGO_ACCESS_TOKEN}`
+        },
+
         body: JSON.stringify({
-  reason: "PropostaFlow Pro",
+          reason: "PropostaFlow Pro",
 
-  payer_email: email,
-  external_reference: userId,
+          payer_email: email,
 
-  auto_recurring: {
-    frequency: 1,
-    frequency_type: "months",
-    transaction_amount: 29.90,
-    currency_id: "BRL"
-  },
+          external_reference: userId,
+
+          auto_recurring: {
+            frequency: 1,
+            frequency_type: "months",
+            transaction_amount: 29.90,
+            currency_id: "BRL"
+          },
 
           back_url:
             "https://microsaasdisgrama.vercel.app/planos.html",
-            notification_url:
-  "https://microsaasdisgrama.vercel.app/api/mercadopago-webhook",
+
+          notification_url:
+            "https://microsaasdisgrama.vercel.app/api/mercadopago-webhook",
 
           status: "pending"
         })
@@ -49,7 +53,7 @@ export default async function handler(req, res) {
     const data = await response.json();
 
     if (!response.ok) {
-      console.error(data);
+      console.error("Mercado Pago:", data);
 
       return res.status(response.status).json({
         error: "Erro ao criar assinatura",
@@ -62,10 +66,10 @@ export default async function handler(req, res) {
     });
 
   } catch (error) {
-    console.error(error);
+    console.error("Erro:", error);
 
     return res.status(500).json({
-      error: "Erro interno"
+      error: error.message
     });
   }
-}
+};
