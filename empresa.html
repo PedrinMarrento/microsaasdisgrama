@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Minha Empresa — PropostaFlow</title>
+
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body class="app-page">
+
+  <aside class="sidebar">
+
+    <a class="logo" href="dashboard.html">
+      Proposta<span>Flow</span>
+    </a>
+
+    <nav>
+      <a href="dashboard.html">▦ Dashboard</a>
+      <a href="clientes.html">👥 Clientes</a>
+      <a href="propostas.html">📝 Propostas</a>
+      <a href="nova-proposta.html">＋ Nova proposta</a>
+      <a class="active" href="empresa.html">⚙️ Minha Empresa</a>
+    </nav>
+
+    <button id="logoutBtn" class="sidebar-logout">
+      Sair
+    </button>
+
+  </aside>
+
+  <main class="app-main">
+
+    <div class="app-header">
+      <div>
+        <p class="eyebrow">CONFIGURAÇÕES</p>
+        <h1>Minha Empresa</h1>
+      </div>
+    </div>
+
+    <section class="card form-card">
+
+      <h2>Dados da empresa</h2>
+
+      <p style="color:var(--muted); margin-top:5px;">
+        Essas informações serão usadas nas suas propostas.
+      </p>
+
+      <form id="companyForm">
+
+        <label>Nome da empresa</label>
+        <input
+          id="businessName"
+          type="text"
+          placeholder="Ex.: MattPrograms"
+        >
+
+        <label>CPF / CNPJ</label>
+        <input
+          id="document"
+          type="text"
+          placeholder="CPF ou CNPJ"
+        >
+
+        <label>WhatsApp</label>
+        <input
+          id="companyPhone"
+          type="text"
+          placeholder="(21) 99999-9999"
+        >
+
+        <label>E-mail</label>
+        <input
+          id="companyEmail"
+          type="email"
+          placeholder="contato@empresa.com"
+        >
+
+        <label>Endereço</label>
+        <input
+          id="companyAddress"
+          type="text"
+          placeholder="Cidade - Estado"
+        >
+
+        <button
+          type="submit"
+          class="btn btn-primary"
+          style="margin-top:20px;"
+        >
+          Salvar informações
+        </button>
+
+      </form>
+
+      <p id="companyMessage" class="form-message"></p>
+
+    </section>
+
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/empresa.js"></script>
+
+</body>
+</html>

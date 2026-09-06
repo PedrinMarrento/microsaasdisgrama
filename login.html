@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Entrar — PropostaFlow</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body class="auth-page">
+  <div class="auth-shell">
+    <a class="logo" href="index.html">Proposta<span>Flow</span></a>
+    <div class="auth-card card">
+      <div class="auth-tabs">
+        <button id="tabLogin" class="active">Entrar</button>
+        <button id="tabSignup">Criar conta</button>
+      </div>
+
+      <div id="loginPanel">
+        <h1>Bem-vindo de volta</h1>
+        <p>Entre para acessar seu painel.</p>
+
+        <form id="loginForm">
+          <label>E-mail</label>
+          <input id="loginEmail" type="email" placeholder="voce@email.com" required />
+          <label>Senha</label>
+          <input id="loginPassword" type="password" placeholder="••••••••" required />
+          <button class="btn btn-primary full" type="submit">Entrar</button>
+        </form>
+      </div>
+
+      <div id="signupPanel" class="hidden">
+        <h1>Crie sua conta</h1>
+        <p>Comece grátis em poucos segundos.</p>
+
+        <form id="signupForm">
+          <label>Seu nome</label>
+          <input id="signupName" type="text" placeholder="Seu nome" required />
+          <label>E-mail</label>
+          <input id="signupEmail" type="email" placeholder="voce@email.com" required />
+          <label>Senha</label>
+          <input id="signupPassword" type="password" minlength="6" placeholder="Mínimo 6 caracteres" required />
+          <button class="btn btn-primary full" type="submit">Criar conta</button>
+        </form>
+      </div>
+
+      <p id="authMessage" class="form-message"></p>
+      <p class="auth-note">Nesta primeira versão, o login usa o armazenamento do navegador. Depois trocamos por Supabase.</p>
+    </div>
+  </div>
+
+  <script src="js/auth.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase.js"></script>
+<script src="js/auth.js"></script>
+</body>
+</html>

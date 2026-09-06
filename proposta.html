@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Proposta Comercial — PropostaFlow</title>
+
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+  <main class="proposal-public">
+
+    <!-- EMPRESA -->
+    <header class="proposal-company">
+
+      <div>
+        <p class="eyebrow">PROPOSTA COMERCIAL</p>
+
+        <h2 id="businessName">
+          Empresa
+        </h2>
+
+        <p id="businessDocument"></p>
+        <p id="businessPhone"></p>
+        <p id="businessEmail"></p>
+        <p id="businessAddress"></p>
+      </div>
+
+    </header>
+
+
+    <!-- PROPOSTA -->
+    <section class="proposal-content">
+
+      <div class="proposal-heading">
+
+        <div>
+          <p class="eyebrow">
+            PROPOSTA PARA
+          </p>
+
+          <h1 id="publicClient">
+            Cliente
+          </h1>
+        </div>
+
+        <span
+          id="publicStatus"
+          class="tag gray"
+        >
+          Carregando...
+        </span>
+
+      </div>
+
+
+      <hr>
+
+
+      <!-- TÍTULO -->
+      <div class="proposal-section">
+
+        <p class="eyebrow">
+          SERVIÇO / PROJETO
+        </p>
+
+        <h2 id="publicTitle">
+          Carregando...
+        </h2>
+
+      </div>
+
+
+      <!-- VALOR E PRAZO -->
+      <div class="proposal-highlight">
+
+        <div>
+
+          <small>
+            INVESTIMENTO
+          </small>
+
+          <strong id="publicValue">
+            R$ 0,00
+          </strong>
+
+        </div>
+
+
+        <div>
+
+          <small>
+            PRAZO
+          </small>
+
+          <strong id="publicDeadline">
+            -
+          </strong>
+
+        </div>
+
+      </div>
+
+
+      <!-- DESCRIÇÃO -->
+      <div class="proposal-section">
+
+        <p class="eyebrow">
+          DESCRIÇÃO
+        </p>
+
+        <p id="publicDescription">
+          Carregando...
+        </p>
+
+      </div>
+
+
+      <!-- OBSERVAÇÕES -->
+      <div class="proposal-section">
+
+        <p class="eyebrow">
+          OBSERVAÇÕES
+        </p>
+
+        <p id="publicNotes">
+          -
+        </p>
+
+      </div>
+
+
+      <!-- BOTÕES -->
+      <div class="proposal-public-actions">
+
+        <button
+          id="acceptProposal"
+          class="btn btn-primary"
+        >
+          ✓ Aceitar proposta
+        </button>
+
+
+        <button
+          id="rejectProposal"
+          class="btn btn-ghost"
+        >
+          ✕ Recusar
+        </button>
+
+
+        <button
+          id="whatsappProposal"
+          class="btn btn-ghost"
+        >
+          WhatsApp
+        </button>
+
+
+        <button
+          onclick="window.print()"
+          class="btn btn-ghost"
+        >
+          Imprimir / Salvar PDF
+        </button>
+
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script src="js/supabase.js"></script>
+
+  <script src="js/proposta-publica.js"></script>
+
+</body>
+
+</html>

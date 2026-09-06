@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Clientes — PropostaFlow</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body class="app-page">
+  <aside class="sidebar">
+    <a class="logo" href="dashboard.html">Proposta<span>Flow</span></a>
+    <nav>
+      <a href="dashboard.html">▦ Dashboard</a>
+      <a class="active" href="clientes.html">👥 Clientes</a>
+      <a href="propostas.html">📝 Propostas</a>
+      <a href="nova-proposta.html">＋ Nova proposta</a>
+    </nav>
+    <button id="logoutBtn" class="sidebar-logout">Sair</button>
+  </aside>
+
+  <main class="app-main">
+    <div class="app-header">
+      <div>
+        <p class="eyebrow">CRM SIMPLES</p>
+        <h1>Clientes</h1>
+      </div>
+      <button class="btn btn-primary" id="openClientModal">+ Novo cliente</button>
+    </div>
+
+    <section class="card content-card">
+      <div class="toolbar">
+        <input id="clientSearch" class="search" type="search" placeholder="Buscar cliente..." />
+      </div>
+      <div id="clientsList" class="table-wrap"></div>
+    </section>
+  </main>
+
+  <div id="clientModal" class="modal hidden">
+    <div class="modal-box card">
+      <div class="modal-head">
+        <h2>Novo cliente</h2>
+        <button id="closeClientModal">✕</button>
+      </div>
+      <form id="clientForm">
+        <label>Nome</label>
+        <input id="clientName" required />
+        <label>Empresa</label>
+        <input id="clientCompany" />
+        <label>WhatsApp</label>
+        <input id="clientPhone" placeholder="5521999999999" />
+        <label>E-mail</label>
+        <input id="clientEmail" type="email" />
+        <button class="btn btn-primary full" type="submit">Salvar cliente</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase.js"></script>
+<script src="js/common.js"></script>
+<script src="js/clientes.js"></script>
+</body>
+</html>

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Propostas — PropostaFlow</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body class="app-page">
+  <aside class="sidebar">
+    <a class="logo" href="dashboard.html">Proposta<span>Flow</span></a>
+    <nav>
+      <a href="dashboard.html">▦ Dashboard</a>
+      <a href="clientes.html">👥 Clientes</a>
+      <a class="active" href="propostas.html">📝 Propostas</a>
+      <a href="nova-proposta.html">＋ Nova proposta</a>
+    </nav>
+    <button id="logoutBtn" class="sidebar-logout">Sair</button>
+  </aside>
+
+  <main class="app-main">
+    <div class="app-header">
+      <div>
+        <p class="eyebrow">NEGOCIAÇÕES</p>
+        <h1>Propostas</h1>
+      </div>
+      <a class="btn btn-primary" href="nova-proposta.html">+ Nova proposta</a>
+    </div>
+
+    <section class="card content-card">
+      <div class="toolbar">
+        <input id="proposalSearch" class="search" type="search" placeholder="Buscar proposta..." />
+        <select id="statusFilter">
+          <option value="">Todos os status</option>
+          <option value="Rascunho">Rascunho</option>
+          <option value="Aguardando">Aguardando</option>
+          <option value="Aceita">Aceita</option>
+          <option value="Recusada">Recusada</option>
+        </select>
+      </div>
+      <div id="proposalList" class="table-wrap"></div>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase.js"></script>
+<script src="js/common.js"></script>
+<script src="js/propostas.js"></script>
+</body>
+</html>
