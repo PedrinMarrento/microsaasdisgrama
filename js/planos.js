@@ -14,8 +14,10 @@ upgradeBtn.addEventListener("click", async () => {
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({
-        email: user.email
+     body: JSON.stringify({
+  email: user.email,
+  userId: user.id
+})
       })
     });
 
