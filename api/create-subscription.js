@@ -23,19 +23,18 @@ export default async function handler(req, res) {
           "Content-Type": "application/json",
           Authorization:
             `Bearer ${process.env.MERCADO_PAGO_ACCESS_TOKEN}`
-        },
-
         body: JSON.stringify({
-          reason: "PropostaFlow Pro",
+  reason: "PropostaFlow Pro",
 
-          payer_email: email,
+  payer_email: email,
+  external_reference: userId,
 
-          auto_recurring: {
-            frequency: 1,
-            frequency_type: "months",
-            transaction_amount: 29.90,
-            currency_id: "BRL"
-          },
+  auto_recurring: {
+    frequency: 1,
+    frequency_type: "months",
+    transaction_amount: 29.90,
+    currency_id: "BRL"
+  },
 
           back_url:
             "https://microsaasdisgrama.vercel.app/planos.html",
