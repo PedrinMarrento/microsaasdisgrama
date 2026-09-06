@@ -27,6 +27,9 @@ module.exports = async function handler(req, res) {
         body: JSON.stringify({
           reason: "PropostaFlow Pro",
 
+          payer_email:
+            "test_user_242383705928364986@testuser.com",
+
           external_reference: userId,
 
           auto_recurring: {
