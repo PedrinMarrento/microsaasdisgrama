@@ -94,20 +94,14 @@ document.getElementById("businessAddress").textContent =
       currency: "BRL"
     });
 
-    const mensagem = `
-Olá ${proposal.client_name}! 👋
-
-Preparei uma proposta comercial para você:
-
-📄 ${proposal.title}
-💰 Valor: ${valor}
-⏱ Prazo: ${proposal.deadline || "A definir"}
-
-Você pode visualizar e responder a proposta pelo link:
-
-${linkProposta}
-    `.trim();
-
+   const mensagem =
+  `Olá ${proposal.client_name}!\n\n` +
+  `Preparei uma proposta comercial para você.\n\n` +
+  `Proposta: ${proposal.title}\n` +
+  `Valor: ${valor}\n` +
+  `Prazo: ${proposal.deadline || "A definir"}\n\n` +
+  `Você pode visualizar e responder a proposta pelo link:\n` +
+  `${linkProposta}`;
     const whatsappURL =
       "https://wa.me/?text=" +
       encodeURIComponent(mensagem);
