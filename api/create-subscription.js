@@ -14,8 +14,8 @@ module.exports = async function handler(req, res) {
       });
     }
 
-    const TEST_BUYER_EMAIL =
-      "pedrinhodorh6@gmail.com";
+  const TEST_BUYER_EMAIL =
+  "test@testuser.com";
 
     const response = await fetch(
       "https://api.mercadopago.com/preapproval",
