@@ -11,29 +11,35 @@ upgradeBtn.addEventListener("click", async () => {
   try {
     const response = await fetch("/api/create-subscription", {
       method: "POST",
-
       headers: {
         "Content-Type": "application/json"
       },
-
       body: JSON.stringify({
         email: user.email,
         userId: user.id
       })
     });
 
-    const data = await response.json();
+    const text = await response.text();
 
-    if (!response.ok || !data.url) {
-      console.error(data);
-      alert("Erro ao iniciar assinatura.");
+    console.log("RESPOSTA API:", text);
+
+    if (!response.ok) {
+      alert("Erro na API. Veja o Console.");
+      return;
+    }
+
+    const data = JSON.parse(text);
+
+    if (!data.url) {
+      alert("A API não retornou o link de pagamento.");
       return;
     }
 
     window.location.href = data.url;
 
   } catch (error) {
-    console.error(error);
+    console.error("ERRO:", error);
     alert("Erro ao conectar com o pagamento.");
 
   } finally {
