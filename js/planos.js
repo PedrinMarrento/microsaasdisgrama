@@ -11,13 +11,14 @@ upgradeBtn.addEventListener("click", async () => {
   try {
     const response = await fetch("/api/create-subscription", {
       method: "POST",
+
       headers: {
         "Content-Type": "application/json"
       },
-     body: JSON.stringify({
-  email: user.email,
-  userId: user.id
-})
+
+      body: JSON.stringify({
+        email: user.email,
+        userId: user.id
       })
     });
 
