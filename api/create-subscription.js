@@ -14,14 +14,10 @@ module.exports = async function handler(req, res) {
       });
     }
 
-  const TEST_BUYER_EMAIL =
-  "test@testuser.com";
-
     const response = await fetch(
       "https://api.mercadopago.com/preapproval",
       {
         method: "POST",
-
         headers: {
           "Content-Type": "application/json",
           Authorization:
@@ -30,8 +26,6 @@ module.exports = async function handler(req, res) {
 
         body: JSON.stringify({
           reason: "PropostaFlow Pro",
-
-          payer_email: TEST_BUYER_EMAIL,
 
           external_reference: userId,
 
@@ -56,7 +50,7 @@ module.exports = async function handler(req, res) {
     const data = await response.json();
 
     if (!response.ok) {
-      console.error("Erro Mercado Pago:", data);
+      console.error("Mercado Pago:", data);
 
       return res.status(response.status).json({
         error: "Erro ao criar assinatura",
@@ -69,7 +63,7 @@ module.exports = async function handler(req, res) {
     });
 
   } catch (error) {
-    console.error("Erro interno:", error);
+    console.error("Erro:", error);
 
     return res.status(500).json({
       error: error.message
