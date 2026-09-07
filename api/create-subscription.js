@@ -51,7 +51,9 @@ module.exports = async function handler(req, res) {
     );
 
     const data = await response.json();
-    console.log("ASSINATURA CRIADA:", data);
+    console.log("MP ID:", data.id);
+console.log("MP STATUS:", data.status);
+console.log("MP INIT_POINT:", data.init_point);
 
     if (!response.ok) {
       console.error("Mercado Pago:", data);
