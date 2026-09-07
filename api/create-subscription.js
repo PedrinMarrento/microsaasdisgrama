@@ -6,11 +6,11 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    const { userId } = req.body;
+    const { userId, email } = req.body;
 
-    if (!userId) {
+    if (!userId || !email) {
       return res.status(400).json({
-        error: "Usuário não informado"
+        error: "Usuário ou e-mail não informado"
       });
     }
 
@@ -18,6 +18,7 @@ module.exports = async function handler(req, res) {
       "https://api.mercadopago.com/preapproval",
       {
         method: "POST",
+
         headers: {
           "Content-Type": "application/json",
           Authorization:
@@ -27,8 +28,7 @@ module.exports = async function handler(req, res) {
         body: JSON.stringify({
           reason: "PropostaFlow Pro",
 
-          payer_email:
-            "test_user_242383705928364986@testuser.com",
+          payer_email: email,
 
           external_reference: userId,
 
@@ -51,9 +51,10 @@ module.exports = async function handler(req, res) {
     );
 
     const data = await response.json();
+
     console.log("MP ID:", data.id);
-console.log("MP STATUS:", data.status);
-console.log("MP INIT_POINT:", data.init_point);
+    console.log("MP STATUS:", data.status);
+    console.log("MP INIT_POINT:", data.init_point);
 
     if (!response.ok) {
       console.error("Mercado Pago:", data);
