@@ -35,7 +35,7 @@ module.exports = async function handler(req, res) {
           auto_recurring: {
             frequency: 1,
             frequency_type: "months",
-            transaction_amount: 29.90,
+           transaction_amount: 1.00,
             currency_id: "BRL"
           },
 
