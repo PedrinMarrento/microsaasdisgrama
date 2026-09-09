@@ -6,16 +6,17 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    const { userId, email } = req.body;
+    const { userId } = req.body;
 
-    if (!userId || !email) {
+    if (!userId) {
       return res.status(400).json({
-        error: "Usuário ou e-mail não informado"
+        error: "Usuário não informado"
       });
     }
 
-    const today = new Date();
-    const nextDueDate = today.toISOString().split("T")[0];
+    const today = new Date()
+      .toISOString()
+      .split("T")[0];
 
     const response = await fetch(
       "https://api-sandbox.asaas.com/v3/checkouts",
@@ -25,8 +26,10 @@ module.exports = async function handler(req, res) {
           "Content-Type": "application/json",
           access_token: process.env.ASAAS_API_KEY
         },
+
         body: JSON.stringify({
           billingTypes: ["CREDIT_CARD"],
+
           chargeTypes: ["RECURRENT"],
 
           minutesToExpire: 60,
@@ -51,13 +54,9 @@ module.exports = async function handler(req, res) {
             }
           ],
 
-          customerData: {
-            email: email
-          },
-
           subscription: {
             cycle: "MONTHLY",
-            nextDueDate: nextDueDate
+            nextDueDate: today
           }
         })
       }
@@ -77,7 +76,7 @@ module.exports = async function handler(req, res) {
 
     return res.status(200).json({
       id: data.id,
-      url: data.url
+      url: data.link
     });
 
   } catch (error) {
