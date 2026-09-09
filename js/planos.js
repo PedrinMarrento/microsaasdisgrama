@@ -9,7 +9,7 @@ upgradeBtn.addEventListener("click", async () => {
   upgradeBtn.textContent = "Carregando...";
 
   try {
-    const response = await fetch("/api/create-subscription", {
+    const response = await fetch("/api/create-asaas-subscription", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -20,19 +20,18 @@ upgradeBtn.addEventListener("click", async () => {
       })
     });
 
-    const text = await response.text();
+    const data = await response.json();
 
-    console.log("RESPOSTA API:", text);
+    console.log("RESPOSTA ASAAS:", data);
 
     if (!response.ok) {
-      alert("Erro na API. Veja o Console.");
+      console.error(data);
+      alert("Erro ao criar pagamento. Veja o Console.");
       return;
     }
 
-    const data = JSON.parse(text);
-
     if (!data.url) {
-      alert("A API não retornou o link de pagamento.");
+      alert("O Asaas não retornou o link de pagamento.");
       return;
     }
 
@@ -40,7 +39,7 @@ upgradeBtn.addEventListener("click", async () => {
 
   } catch (error) {
     console.error("ERRO:", error);
-    alert("Erro ao conectar com o pagamento.");
+    alert("Erro ao conectar com o Asaas.");
 
   } finally {
     upgradeBtn.disabled = false;
