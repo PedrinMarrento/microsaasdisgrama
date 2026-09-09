@@ -14,26 +14,20 @@ module.exports = async function handler(req, res) {
       });
     }
 
-    // Criar Checkout recorrente no Asaas Sandbox
+    const today = new Date();
+    const nextDueDate = today.toISOString().split("T")[0];
+
     const response = await fetch(
       "https://api-sandbox.asaas.com/v3/checkouts",
       {
         method: "POST",
-
         headers: {
           "Content-Type": "application/json",
           access_token: process.env.ASAAS_API_KEY
         },
-
         body: JSON.stringify({
-          billingTypes: [
-            "PIX",
-            "CREDIT_CARD"
-          ],
-
-          chargeTypes: [
-            "RECURRENT"
-          ],
+          billingTypes: ["CREDIT_CARD"],
+          chargeTypes: ["RECURRENT"],
 
           minutesToExpire: 60,
 
@@ -63,9 +57,7 @@ module.exports = async function handler(req, res) {
 
           subscription: {
             cycle: "MONTHLY",
-            nextDueDate: new Date()
-              .toISOString()
-              .split("T")[0]
+            nextDueDate: nextDueDate
           }
         })
       }
@@ -73,7 +65,8 @@ module.exports = async function handler(req, res) {
 
     const data = await response.json();
 
-    console.log("ASAAS:", data);
+    console.log("ASAAS STATUS:", response.status);
+    console.log("ASAAS RESPOSTA:", JSON.stringify(data));
 
     if (!response.ok) {
       return res.status(response.status).json({
@@ -84,11 +77,11 @@ module.exports = async function handler(req, res) {
 
     return res.status(200).json({
       id: data.id,
-      url: `https://sandbox.asaas.com/checkoutSession/show?id=${data.id}`
+      url: data.url
     });
 
   } catch (error) {
-    console.error("Erro Asaas:", error);
+    console.error("ERRO ASAAS:", error);
 
     return res.status(500).json({
       error: error.message
