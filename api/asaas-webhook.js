@@ -4,11 +4,11 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    const receivedToken = req.headers["asaas-access-token"];
-    const secret = process.env.ASAAS_WEBHOOK_TOKEN;
+    const tokenRecebido = req.headers["asaas-access-token"];
+    const tokenEsperado = process.env.ASAAS_WEBHOOK_TOKEN;
 
-    if (!receivedToken || !secret || receivedToken !== secret) {
-      console.error("Webhook Asaas não autorizado.");
+    if (!tokenRecebido || tokenRecebido !== tokenEsperado) {
+      console.error("Webhook Asaas não autorizado");
       return res.status(401).json({ error: "Não autorizado" });
     }
 
@@ -16,12 +16,19 @@ module.exports = async function handler(req, res) {
 
     console.log("ASAAS EVENTO:", event);
 
-    // CHECKOUT PAGO
+    // ==========================================
+    // CHECKOUT PAGO -> PRO + SALVA CUSTOMER
+    // ==========================================
     if (event === "CHECKOUT_PAID") {
       const checkout = req.body?.checkout;
 
+      console.log(
+        "CHECKOUT:",
+        JSON.stringify(checkout)
+      );
+
       if (!checkout?.externalReference) {
-        console.log("Checkout sem externalReference.");
+        console.log("Checkout sem externalReference");
         return res.status(200).json({ ok: true });
       }
 
@@ -35,45 +42,45 @@ module.exports = async function handler(req, res) {
         subscription_updated_at: new Date().toISOString()
       });
 
-      console.log("Usuário virou PRO:", userId);
+      console.log(
+        "Usuário virou PRO:",
+        userId
+      );
 
       return res.status(200).json({ ok: true });
     }
 
-    // ASSINATURA CRIADA
+    // ==========================================
+    // ASSINATURA CRIADA -> VINCULAR AO CUSTOMER
+    // ==========================================
     if (event === "SUBSCRIPTION_CREATED") {
       const subscription = req.body?.subscription;
 
+      console.log(
+        "SUBSCRIPTION:",
+        JSON.stringify(subscription)
+      );
+
       if (!subscription?.id) {
-        console.log("SUBSCRIPTION_CREATED sem ID.");
         return res.status(200).json({ ok: true });
       }
 
       let userId = subscription.externalReference || null;
 
-      // tenta localizar pelo customer salvo no profile
       if (!userId && subscription.customer) {
-        const profileResponse = await fetch(
-          `${process.env.SUPABASE_URL}/rest/v1/profiles?asaas_customer_id=eq.${encodeURIComponent(subscription.customer)}&select=id`,
-          {
-            headers: {
-              apikey: process.env.SUPABASE_SERVICE_ROLE_KEY,
-              Authorization:
-                `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`
-            }
-          }
+        const profiles = await buscarProfile(
+          "asaas_customer_id",
+          subscription.customer
         );
 
-        const profiles = await profileResponse.json();
-
-        if (Array.isArray(profiles) && profiles.length > 0) {
+        if (profiles.length > 0) {
           userId = profiles[0].id;
         }
       }
 
       if (!userId) {
         console.log(
-          "Não foi possível relacionar assinatura ao usuário:",
+          "Assinatura sem usuário associado:",
           subscription.id
         );
 
@@ -88,7 +95,7 @@ module.exports = async function handler(req, res) {
       });
 
       console.log(
-        "Assinatura Asaas vinculada:",
+        "Assinatura vinculada:",
         subscription.id,
         "->",
         userId
@@ -97,7 +104,9 @@ module.exports = async function handler(req, res) {
       return res.status(200).json({ ok: true });
     }
 
-    // CANCELAMENTO / INATIVAÇÃO
+    // ==========================================
+    // ASSINATURA CANCELADA / INATIVADA -> FREE
+    // ==========================================
     if (
       event === "SUBSCRIPTION_DELETED" ||
       event === "SUBSCRIPTION_INACTIVATED"
@@ -105,24 +114,26 @@ module.exports = async function handler(req, res) {
       const subscription = req.body?.subscription;
 
       if (!subscription?.id) {
-        console.log("Evento de assinatura sem ID.");
         return res.status(200).json({ ok: true });
       }
 
-      const profileResponse = await fetch(
-        `${process.env.SUPABASE_URL}/rest/v1/profiles?asaas_subscription_id=eq.${encodeURIComponent(subscription.id)}&select=id`,
-        {
-          headers: {
-            apikey: process.env.SUPABASE_SERVICE_ROLE_KEY,
-            Authorization:
-              `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`
-          }
-        }
+      let profiles = await buscarProfile(
+        "asaas_subscription_id",
+        subscription.id
       );
 
-      const profiles = await profileResponse.json();
+      // fallback pelo customer
+      if (
+        profiles.length === 0 &&
+        subscription.customer
+      ) {
+        profiles = await buscarProfile(
+          "asaas_customer_id",
+          subscription.customer
+        );
+      }
 
-      if (!Array.isArray(profiles) || profiles.length === 0) {
+      if (profiles.length === 0) {
         console.log(
           "Nenhum usuário encontrado para assinatura:",
           subscription.id
@@ -139,22 +150,47 @@ module.exports = async function handler(req, res) {
         subscription_updated_at: new Date().toISOString()
       });
 
-      console.log("Usuário voltou para FREE:", userId);
+      console.log(
+        "Usuário voltou para FREE:",
+        userId
+      );
 
       return res.status(200).json({ ok: true });
     }
 
-    // PAGAMENTOS
-    const payment = req.body?.payment;
-
+    // ==========================================
+    // PAGAMENTO RECEBIDO
+    // ==========================================
     if (
-      payment &&
-      (
-        event === "PAYMENT_CONFIRMED" ||
-        event === "PAYMENT_RECEIVED"
-      )
+      event === "PAYMENT_CONFIRMED" ||
+      event === "PAYMENT_RECEIVED"
     ) {
-      console.log("Pagamento confirmado:", payment.id);
+      const payment = req.body?.payment;
+
+      console.log(
+        "Pagamento confirmado:",
+        payment?.id
+      );
+
+      return res.status(200).json({ ok: true });
+    }
+
+    // ==========================================
+    // INADIMPLÊNCIA / REEMBOLSO
+    // ==========================================
+    if (
+      event === "PAYMENT_OVERDUE" ||
+      event === "PAYMENT_REFUNDED" ||
+      event === "PAYMENT_DELETED"
+    ) {
+      const payment = req.body?.payment;
+
+      console.log(
+        "Pagamento problemático:",
+        event,
+        payment?.id
+      );
+
       return res.status(200).json({ ok: true });
     }
 
@@ -164,7 +200,10 @@ module.exports = async function handler(req, res) {
     });
 
   } catch (error) {
-    console.error("Erro webhook Asaas:", error);
+    console.error(
+      "Erro webhook Asaas:",
+      error
+    );
 
     return res.status(500).json({
       error: "Erro interno"
@@ -172,27 +211,62 @@ module.exports = async function handler(req, res) {
   }
 };
 
+
+async function buscarProfile(campo, valor) {
+  const response = await fetch(
+    `${process.env.SUPABASE_URL}/rest/v1/profiles?${campo}=eq.${encodeURIComponent(valor)}&select=id`,
+    {
+      headers: {
+        apikey:
+          process.env.SUPABASE_SERVICE_ROLE_KEY,
+
+        Authorization:
+          `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`
+      }
+    }
+  );
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      `Erro buscando profile: ${JSON.stringify(data)}`
+    );
+  }
+
+  return Array.isArray(data) ? data : [];
+}
+
+
 async function atualizarProfile(userId, dados) {
   const response = await fetch(
     `${process.env.SUPABASE_URL}/rest/v1/profiles?id=eq.${userId}`,
     {
       method: "PATCH",
+
       headers: {
         "Content-Type": "application/json",
-        apikey: process.env.SUPABASE_SERVICE_ROLE_KEY,
+
+        apikey:
+          process.env.SUPABASE_SERVICE_ROLE_KEY,
+
         Authorization:
           `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`,
+
         Prefer: "return=representation"
       },
+
       body: JSON.stringify(dados)
     }
   );
 
-  const text = await response.text();
+  const data = await response.text();
 
   if (!response.ok) {
-    throw new Error(`Erro Supabase: ${text}`);
+    throw new Error(
+      `Erro atualizando profile: ${data}`
+    );
   }
 
-  return text;
+  return data;
 }
