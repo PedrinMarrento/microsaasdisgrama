@@ -9,10 +9,7 @@ module.exports = async function handler(req, res) {
 
     if (!receivedToken || !secret || receivedToken !== secret) {
       console.error("Webhook Asaas não autorizado.");
-
-      return res.status(401).json({
-        error: "Não autorizado"
-      });
+      return res.status(401).json({ error: "Não autorizado" });
     }
 
     const event = req.body?.event;
@@ -20,7 +17,7 @@ module.exports = async function handler(req, res) {
     console.log("ASAAS EVENTO:", event);
 
     // =========================
-    // CHECKOUT PAGO
+    // CHECKOUT PAGO -> PRO
     // =========================
 
     if (event === "CHECKOUT_PAID") {
@@ -52,8 +49,7 @@ module.exports = async function handler(req, res) {
           body: JSON.stringify({
             plan: "pro",
             subscription_status: "CHECKOUT_PAID",
-            subscription_updated_at:
-              new Date().toISOString()
+            subscription_updated_at: new Date().toISOString()
           })
         }
       );
@@ -62,16 +58,10 @@ module.exports = async function handler(req, res) {
 
       if (!supabaseResponse.ok) {
         console.error("Erro Supabase:", result);
-
-        return res.status(200).json({
-          ok: true
-        });
+        return res.status(200).json({ ok: true });
       }
 
-      console.log(
-        "Usuário virou PRO:",
-        userId
-      );
+      console.log("Usuário virou PRO:", userId);
 
       return res.status(200).json({
         ok: true,
@@ -81,7 +71,7 @@ module.exports = async function handler(req, res) {
     }
 
     // =========================
-    // PAGAMENTOS FUTUROS
+    // EVENTOS DE PAGAMENTO
     // =========================
 
     const payment = req.body?.payment;
@@ -98,10 +88,69 @@ module.exports = async function handler(req, res) {
         payment.id
       );
 
+      return res.status(200).json({ ok: true });
+    }
+
+    // =========================
+    // ASSINATURA CANCELADA -> FREE
+    // =========================
+
+    if (
+      event === "SUBSCRIPTION_DELETED" ||
+      event === "SUBSCRIPTION_INACTIVATED"
+    ) {
+      const subscription = req.body?.subscription;
+
+      if (!subscription) {
+        console.log("Evento sem subscription.");
+        return res.status(200).json({ ok: true });
+      }
+
+      const userId = subscription.externalReference;
+
+      if (!userId) {
+        console.log("Assinatura sem externalReference.");
+        return res.status(200).json({ ok: true });
+      }
+
+      const supabaseResponse = await fetch(
+        `${process.env.SUPABASE_URL}/rest/v1/profiles?id=eq.${userId}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            apikey: process.env.SUPABASE_SERVICE_ROLE_KEY,
+            Authorization:
+              `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`,
+            Prefer: "return=representation"
+          },
+          body: JSON.stringify({
+            plan: "free",
+            subscription_status: event,
+            subscription_updated_at: new Date().toISOString()
+          })
+        }
+      );
+
+      const result = await supabaseResponse.text();
+
+      if (!supabaseResponse.ok) {
+        console.error("Erro Supabase:", result);
+        return res.status(200).json({ ok: true });
+      }
+
+      console.log("Usuário voltou para FREE:", userId);
+
       return res.status(200).json({
-        ok: true
+        ok: true,
+        userId,
+        plan: "free"
       });
     }
+
+    // =========================
+    // PAGAMENTO PROBLEMÁTICO
+    // =========================
 
     if (
       payment &&
@@ -112,14 +161,12 @@ module.exports = async function handler(req, res) {
       )
     ) {
       console.log(
-        "Evento de pagamento:",
+        "Evento de pagamento problemático:",
         event,
         payment.id
       );
 
-      return res.status(200).json({
-        ok: true
-      });
+      return res.status(200).json({ ok: true });
     }
 
     return res.status(200).json({
