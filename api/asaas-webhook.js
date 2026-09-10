@@ -16,88 +16,115 @@ module.exports = async function handler(req, res) {
     }
 
     const event = req.body?.event;
-    const payment = req.body?.payment;
 
     console.log("ASAAS EVENTO:", event);
-    console.log("ASAAS PAYMENT:", payment?.id);
 
-    if (!payment) {
-      return res.status(200).json({ ok: true });
-    }
+    // =========================
+    // CHECKOUT PAGO
+    // =========================
 
-    const userId = payment.externalReference;
+    if (event === "CHECKOUT_PAID") {
+      const checkout = req.body?.checkout;
 
-    if (!userId) {
-      console.log("Pagamento sem externalReference.");
-      return res.status(200).json({ ok: true });
-    }
+      if (!checkout) {
+        console.log("Evento sem checkout.");
+        return res.status(200).json({ ok: true });
+      }
 
-    let plan = null;
+      const userId = checkout.externalReference;
 
-    if (
-      event === "PAYMENT_CONFIRMED" ||
-      event === "PAYMENT_RECEIVED"
-    ) {
-      plan = "pro";
-    }
+      if (!userId) {
+        console.log("Checkout sem externalReference.");
+        return res.status(200).json({ ok: true });
+      }
 
-    if (
-      event === "PAYMENT_OVERDUE" ||
-      event === "PAYMENT_DELETED" ||
-      event === "PAYMENT_REFUNDED"
-    ) {
-      plan = "free";
-    }
+      const supabaseResponse = await fetch(
+        `${process.env.SUPABASE_URL}/rest/v1/profiles?id=eq.${userId}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            apikey: process.env.SUPABASE_SERVICE_ROLE_KEY,
+            Authorization:
+              `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`,
+            Prefer: "return=representation"
+          },
+          body: JSON.stringify({
+            plan: "pro",
+            subscription_status: "CHECKOUT_PAID",
+            subscription_updated_at:
+              new Date().toISOString()
+          })
+        }
+      );
 
-    if (!plan) {
+      const result = await supabaseResponse.text();
+
+      if (!supabaseResponse.ok) {
+        console.error("Erro Supabase:", result);
+
+        return res.status(200).json({
+          ok: true
+        });
+      }
+
+      console.log(
+        "Usuário virou PRO:",
+        userId
+      );
+
       return res.status(200).json({
         ok: true,
-        ignored: true
+        userId,
+        plan: "pro"
       });
     }
 
-    const supabaseResponse = await fetch(
-      `${process.env.SUPABASE_URL}/rest/v1/profiles?id=eq.${userId}`,
-      {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          apikey: process.env.SUPABASE_SERVICE_ROLE_KEY,
-          Authorization:
-            `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`,
-          Prefer: "return=representation"
-        },
-        body: JSON.stringify({
-          plan: plan,
-          subscription_status: event,
-          subscription_updated_at:
-            new Date().toISOString()
-        })
-      }
-    );
+    // =========================
+    // PAGAMENTOS FUTUROS
+    // =========================
 
-    const result = await supabaseResponse.text();
+    const payment = req.body?.payment;
 
-    if (!supabaseResponse.ok) {
-      console.error("Erro Supabase:", result);
+    if (
+      payment &&
+      (
+        event === "PAYMENT_CONFIRMED" ||
+        event === "PAYMENT_RECEIVED"
+      )
+    ) {
+      console.log(
+        "Pagamento da assinatura confirmado:",
+        payment.id
+      );
 
       return res.status(200).json({
         ok: true
       });
     }
 
-    console.log(
-      "Plano atualizado:",
-      userId,
-      event,
-      plan
-    );
+    if (
+      payment &&
+      (
+        event === "PAYMENT_OVERDUE" ||
+        event === "PAYMENT_DELETED" ||
+        event === "PAYMENT_REFUNDED"
+      )
+    ) {
+      console.log(
+        "Evento de pagamento:",
+        event,
+        payment.id
+      );
+
+      return res.status(200).json({
+        ok: true
+      });
+    }
 
     return res.status(200).json({
       ok: true,
-      userId,
-      event,
-      plan
+      ignored: true
     });
 
   } catch (error) {
