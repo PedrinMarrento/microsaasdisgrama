@@ -161,19 +161,60 @@ module.exports = async function handler(req, res) {
     // ==========================================
     // PAGAMENTO RECEBIDO
     // ==========================================
-    if (
-      event === "PAYMENT_CONFIRMED" ||
-      event === "PAYMENT_RECEIVED"
-    ) {
-      const payment = req.body?.payment;
+    // ==========================================
+// PAGAMENTOS
+// ==========================================
+const payment = req.body?.payment;
+
+if (
+  payment &&
+  (
+    event === "PAYMENT_CREATED" ||
+    event === "PAYMENT_CONFIRMED" ||
+    event === "PAYMENT_RECEIVED"
+  )
+) {
+  console.log("Pagamento recebido:", payment.id);
+
+  if (payment.subscription) {
+    let profiles = [];
+
+    // tenta pelo externalReference do pagamento
+    if (payment.externalReference) {
+      profiles = await buscarProfile(
+        "id",
+        payment.externalReference
+      );
+    }
+
+    // fallback: procura usuário ainda sem subscription
+    // pelo checkout já salvo não é possível direto daqui,
+    // então só atualizamos se tivermos vínculo seguro
+    if (profiles.length > 0) {
+      const userId = profiles[0].id;
+
+      await atualizarProfile(userId, {
+        asaas_subscription_id: payment.subscription,
+        subscription_status: event,
+        subscription_updated_at: new Date().toISOString()
+      });
 
       console.log(
-        "Pagamento confirmado:",
-        payment?.id
+        "Subscription salva pelo pagamento:",
+        payment.subscription,
+        "->",
+        userId
       );
-
-      return res.status(200).json({ ok: true });
+    } else {
+      console.log(
+        "Pagamento possui subscription:",
+        payment.subscription
+      );
     }
+  }
+
+  return res.status(200).json({ ok: true });
+}
 
     // ==========================================
     // INADIMPLÊNCIA / REEMBOLSO
