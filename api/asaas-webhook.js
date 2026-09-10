@@ -16,10 +16,7 @@ module.exports = async function handler(req, res) {
 
     console.log("ASAAS EVENTO:", event);
 
-    // ==================================
-    // CHECKOUT PAGO -> USUÁRIO VIRA PRO
-    // ==================================
-
+    // CHECKOUT PAGO
     if (event === "CHECKOUT_PAID") {
       const checkout = req.body?.checkout;
 
@@ -32,6 +29,8 @@ module.exports = async function handler(req, res) {
 
       await atualizarProfile(userId, {
         plan: "pro",
+        asaas_checkout_id: checkout.id || null,
+        asaas_customer_id: checkout.customer || null,
         subscription_status: "CHECKOUT_PAID",
         subscription_updated_at: new Date().toISOString()
       });
@@ -41,10 +40,7 @@ module.exports = async function handler(req, res) {
       return res.status(200).json({ ok: true });
     }
 
-    // ==================================
-    // ASSINATURA CRIADA -> SALVA O ID
-    // ==================================
-
+    // ASSINATURA CRIADA
     if (event === "SUBSCRIPTION_CREATED") {
       const subscription = req.body?.subscription;
 
@@ -53,44 +49,25 @@ module.exports = async function handler(req, res) {
         return res.status(200).json({ ok: true });
       }
 
-      // Em checkout recorrente, a assinatura pode vir
-      // sem externalReference. Então tentamos localizar
-      // o usuário pelo checkout/cliente relacionado.
       let userId = subscription.externalReference || null;
 
-      if (!userId) {
-        const customerId = subscription.customer;
-
-        if (customerId) {
-          const customerResponse = await fetch(
-            `https://api-sandbox.asaas.com/v3/customers/${customerId}`,
-            {
-              headers: {
-                access_token: process.env.ASAAS_API_KEY
-              }
-            }
-          );
-
-          const customer = await customerResponse.json();
-
-          if (customerResponse.ok && customer?.email) {
-            const profileResponse = await fetch(
-              `${process.env.SUPABASE_URL}/rest/v1/profiles?email=eq.${encodeURIComponent(customer.email)}&select=id`,
-              {
-                headers: {
-                  apikey: process.env.SUPABASE_SERVICE_ROLE_KEY,
-                  Authorization:
-                    `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`
-                }
-              }
-            );
-
-            const profiles = await profileResponse.json();
-
-            if (Array.isArray(profiles) && profiles.length > 0) {
-              userId = profiles[0].id;
+      // tenta localizar pelo customer salvo no profile
+      if (!userId && subscription.customer) {
+        const profileResponse = await fetch(
+          `${process.env.SUPABASE_URL}/rest/v1/profiles?asaas_customer_id=eq.${encodeURIComponent(subscription.customer)}&select=id`,
+          {
+            headers: {
+              apikey: process.env.SUPABASE_SERVICE_ROLE_KEY,
+              Authorization:
+                `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`
             }
           }
+        );
+
+        const profiles = await profileResponse.json();
+
+        if (Array.isArray(profiles) && profiles.length > 0) {
+          userId = profiles[0].id;
         }
       }
 
@@ -105,6 +82,7 @@ module.exports = async function handler(req, res) {
 
       await atualizarProfile(userId, {
         asaas_subscription_id: subscription.id,
+        asaas_customer_id: subscription.customer || null,
         subscription_status: "SUBSCRIPTION_CREATED",
         subscription_updated_at: new Date().toISOString()
       });
@@ -119,10 +97,7 @@ module.exports = async function handler(req, res) {
       return res.status(200).json({ ok: true });
     }
 
-    // ==================================
-    // ASSINATURA CANCELADA -> FREE
-    // ==================================
-
+    // CANCELAMENTO / INATIVAÇÃO
     if (
       event === "SUBSCRIPTION_DELETED" ||
       event === "SUBSCRIPTION_INACTIVATED"
@@ -134,7 +109,7 @@ module.exports = async function handler(req, res) {
         return res.status(200).json({ ok: true });
       }
 
-      const response = await fetch(
+      const profileResponse = await fetch(
         `${process.env.SUPABASE_URL}/rest/v1/profiles?asaas_subscription_id=eq.${encodeURIComponent(subscription.id)}&select=id`,
         {
           headers: {
@@ -145,7 +120,7 @@ module.exports = async function handler(req, res) {
         }
       );
 
-      const profiles = await response.json();
+      const profiles = await profileResponse.json();
 
       if (!Array.isArray(profiles) || profiles.length === 0) {
         console.log(
@@ -169,10 +144,7 @@ module.exports = async function handler(req, res) {
       return res.status(200).json({ ok: true });
     }
 
-    // ==================================
     // PAGAMENTOS
-    // ==================================
-
     const payment = req.body?.payment;
 
     if (
