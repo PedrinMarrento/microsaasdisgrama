@@ -166,26 +166,86 @@ module.exports = async function handler(req, res) {
 // ==========================================
 const payment = req.body?.payment;
 
-if (
-  payment &&
-  (
-    event === "PAYMENT_CREATED" ||
-    event === "PAYMENT_CONFIRMED" ||
-    event === "PAYMENT_RECEIVED"
-  )
-) {
-  console.log("Pagamento recebido:", payment.id);
+if (payment.subscription) {
+  console.log(
+    "Pagamento possui subscription:",
+    payment.subscription
+  );
 
-  if (payment.subscription) {
-    let profiles = [];
+  let profiles = [];
 
-    // tenta pelo externalReference do pagamento
-    if (payment.externalReference) {
-      profiles = await buscarProfile(
-        "id",
-        payment.externalReference
-      );
+  // 1. Tenta externalReference
+  if (payment.externalReference) {
+    profiles = await buscarProfile(
+      "id",
+      payment.externalReference
+    );
+  }
+
+  // 2. Tenta customer do pagamento
+  if (
+    profiles.length === 0 &&
+    payment.customer
+  ) {
+    profiles = await buscarProfile(
+      "asaas_customer_id",
+      payment.customer
+    );
+  }
+
+  // 3. Se ainda não encontrou, tenta usuário
+  // que acabou de criar checkout e está PRO,
+  // mas ainda não possui assinatura vinculada.
+  if (profiles.length === 0) {
+    const response = await fetch(
+      `${process.env.SUPABASE_URL}/rest/v1/profiles?plan=eq.pro&asaas_subscription_id=is.null&order=subscription_updated_at.desc&limit=1&select=id`,
+      {
+        headers: {
+          apikey:
+            process.env.SUPABASE_SERVICE_ROLE_KEY,
+
+          Authorization:
+            `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`
+        }
+      }
+    );
+
+    const data = await response.json();
+
+    if (Array.isArray(data)) {
+      profiles = data;
     }
+  }
+
+  if (profiles.length > 0) {
+    const userId = profiles[0].id;
+
+    await atualizarProfile(userId, {
+      asaas_subscription_id:
+        payment.subscription,
+
+      asaas_customer_id:
+        payment.customer || null,
+
+      subscription_status: event,
+
+      subscription_updated_at:
+        new Date().toISOString()
+    });
+
+    console.log(
+      "ASSINATURA VINCULADA:",
+      payment.subscription,
+      "->",
+      userId
+    );
+  } else {
+    console.log(
+      "Não foi possível vincular subscription:",
+      payment.subscription
+    );
+  }
+}
 
     // fallback: procura usuário ainda sem subscription
     // pelo checkout já salvo não é possível direto daqui,
