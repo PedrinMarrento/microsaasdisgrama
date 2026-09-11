@@ -184,18 +184,25 @@ btnSalvar.addEventListener(
     btnSalvar.textContent =
       "Adicionar cliente";
 
+if (error) {
+  console.error("Erro ao adicionar cliente:", error);
 
-    if (error) {
+  if (
+    error.code === "42501" ||
+    error.message?.toLowerCase().includes("row-level security")
+  ) {
+    alert(
+      "Você atingiu o limite de 3 clientes do plano FREE.\n\n" +
+      "Assine o PRO para cadastrar clientes ilimitados."
+    );
 
-      console.error(error);
+    window.location.href = "planos.html";
+    return;
+  }
 
-      alert(
-        "Erro ao adicionar cliente."
-      );
-
-      return;
-    }
-
+  alert("Erro ao adicionar cliente.");
+  return;
+}
 
     nameInput.value = "";
     companyInput.value = "";
