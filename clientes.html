@@ -1,63 +1,273 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Clientes — PropostaFlow</title>
-  <link rel="stylesheet" href="css/style.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clientes | PropostaFlow</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      background: #07111f;
+      color: white;
+      min-height: 100vh;
+    }
+
+    .layout {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      width: 250px;
+      background: #0d1b2e;
+      padding: 30px 20px;
+      border-right: 1px solid #24344a;
+    }
+
+    .logo {
+      font-size: 24px;
+      font-weight: 800;
+      margin-bottom: 40px;
+    }
+
+    .logo span {
+      color: #7257ff;
+    }
+
+    .menu {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .menu a {
+      color: #d5dbea;
+      text-decoration: none;
+      padding: 13px 15px;
+      border-radius: 10px;
+    }
+
+    .menu a:hover,
+    .menu a.ativo {
+      background: #182a43;
+    }
+
+    .conteudo {
+      flex: 1;
+      padding: 35px;
+    }
+
+    .topo {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .topo h1 {
+      font-size: 30px;
+    }
+
+    .topo p {
+      color: #8f9db1;
+      margin-top: 6px;
+    }
+
+    .btn {
+      border: none;
+      padding: 12px 18px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #4268ff, #7b4dff);
+      color: white;
+    }
+
+    .form-card {
+      background: #0e1b2d;
+      border: 1px solid #22334a;
+      border-radius: 15px;
+      padding: 24px;
+      margin-bottom: 25px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 15px;
+    }
+
+    .campo {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .campo label {
+      color: #9aa9bd;
+      font-size: 13px;
+    }
+
+    .campo input {
+      background: #091524;
+      color: white;
+      border: 1px solid #263850;
+      padding: 12px;
+      border-radius: 9px;
+      outline: none;
+    }
+
+    .campo input:focus {
+      border-color: #7257ff;
+    }
+
+    .acoes-form {
+      margin-top: 18px;
+    }
+
+    .lista {
+      display: grid;
+      gap: 14px;
+    }
+
+    .cliente-card {
+      background: #0e1b2d;
+      border: 1px solid #22334a;
+      border-radius: 14px;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .cliente-card h3 {
+      margin-bottom: 6px;
+    }
+
+    .cliente-card p {
+      color: #8f9db1;
+      margin-top: 4px;
+    }
+
+    .cliente-acoes {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn-danger {
+      background: #3a1620;
+      color: #ff9daf;
+    }
+
+    .vazio {
+      color: #8f9db1;
+      padding: 25px 0;
+    }
+
+    @media (max-width: 750px) {
+      .sidebar {
+        display: none;
+      }
+
+      .conteudo {
+        padding: 20px;
+      }
+
+      .topo,
+      .cliente-card {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  </style>
 </head>
-<body class="app-page">
-  <aside class="sidebar">
-    <a class="logo" href="dashboard.html">Proposta<span>Flow</span></a>
-    <nav>
-      <a href="dashboard.html">▦ Dashboard</a>
-      <a class="active" href="clientes.html">👥 Clientes</a>
-      <a href="propostas.html">📝 Propostas</a>
-      <a href="nova-proposta.html">＋ Nova proposta</a>
-    </nav>
-    <button id="logoutBtn" class="sidebar-logout">Sair</button>
-  </aside>
 
-  <main class="app-main">
-    <div class="app-header">
-      <div>
-        <p class="eyebrow">CRM SIMPLES</p>
-        <h1>Clientes</h1>
+<body>
+
+  <div class="layout">
+
+    <aside class="sidebar">
+      <div class="logo">
+        Proposta<span>Flow</span>
       </div>
-      <button class="btn btn-primary" id="openClientModal">+ Novo cliente</button>
-    </div>
 
-    <section class="card content-card">
-      <div class="toolbar">
-        <input id="clientSearch" class="search" type="search" placeholder="Buscar cliente..." />
+      <nav class="menu">
+        <a href="painel.html">🏠 Início</a>
+        <a class="ativo" href="clientes.html">👥 Clientes</a>
+        <a href="propostas.html">📄 Propostas</a>
+        <a href="planos.html">⭐ Planos</a>
+      </nav>
+    </aside>
+
+    <main class="conteudo">
+
+      <div class="topo">
+        <div>
+          <h1>Clientes</h1>
+          <p>Cadastre e gerencie seus clientes.</p>
+        </div>
       </div>
-      <div id="clientsList" class="table-wrap"></div>
-    </section>
-  </main>
 
-  <div id="clientModal" class="modal hidden">
-    <div class="modal-box card">
-      <div class="modal-head">
+      <section class="form-card">
         <h2>Novo cliente</h2>
-        <button id="closeClientModal">✕</button>
-      </div>
-      <form id="clientForm">
-        <label>Nome</label>
-        <input id="clientName" required />
-        <label>Empresa</label>
-        <input id="clientCompany" />
-        <label>WhatsApp</label>
-        <input id="clientPhone" placeholder="5521999999999" />
-        <label>E-mail</label>
-        <input id="clientEmail" type="email" />
-        <button class="btn btn-primary full" type="submit">Salvar cliente</button>
-      </form>
-    </div>
+
+        <div class="form-grid" style="margin-top: 20px;">
+
+          <div class="campo">
+            <label>Nome</label>
+            <input id="name" type="text" placeholder="Nome do cliente">
+          </div>
+
+          <div class="campo">
+            <label>Empresa</label>
+            <input id="company" type="text" placeholder="Empresa">
+          </div>
+
+          <div class="campo">
+            <label>Telefone</label>
+            <input id="phone" type="text" placeholder="Telefone">
+          </div>
+
+          <div class="campo">
+            <label>E-mail</label>
+            <input id="email" type="email" placeholder="E-mail">
+          </div>
+
+        </div>
+
+        <div class="acoes-form">
+          <button id="btnSalvar" class="btn btn-primary">
+            Adicionar cliente
+          </button>
+        </div>
+      </section>
+
+      <section>
+        <h2>Seus clientes</h2>
+
+        <div id="listaClientes" class="lista" style="margin-top: 18px;">
+          <p class="vazio">Carregando...</p>
+        </div>
+      </section>
+
+    </main>
+
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="js/supabase.js"></script>
-<script src="js/common.js"></script>
-<script src="js/clientes.js"></script>
+  <script src="js/clientes.js"></script>
+
 </body>
 </html>
