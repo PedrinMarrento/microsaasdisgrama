@@ -2,10 +2,6 @@
 // CONFIGURAÇÃO SUPABASE
 // ==========================================
 
-// ==========================================
-// CONFIGURAÇÃO SUPABASE
-// ==========================================
-
 const SUPABASE_URL =
   "https://pdmpyietjlwqfqxdcztd.supabase.co";
 
@@ -17,6 +13,8 @@ const supabaseClient =
     SUPABASE_URL,
     SUPABASE_ANON_KEY
   );
+
+
 // ==========================================
 // ELEMENTOS
 // ==========================================
@@ -48,38 +46,28 @@ const btnSair =
 // ==========================================
 
 async function carregarPainel() {
-
   try {
-
     const {
       data: { user },
       error: userError
     } =
       await supabaseClient.auth.getUser();
 
-
     if (userError || !user) {
-
-      window.location.href =
-        "login.html";
-
+      window.location.href = "login.html";
       return;
     }
 
-
     emailUsuario.textContent =
       user.email;
-
 
     const nome =
       user.user_metadata?.name ||
       user.user_metadata?.nome ||
       user.email.split("@")[0];
 
-
     nomeUsuario.textContent =
       `Olá, ${nome}`;
-
 
     // =====================================
     // BUSCAR PROFILE
@@ -95,9 +83,7 @@ async function carregarPainel() {
         .eq("id", user.id)
         .single();
 
-
     if (profileError) {
-
       console.error(
         "Erro profile:",
         profileError
@@ -106,23 +92,16 @@ async function carregarPainel() {
       throw profileError;
     }
 
-
     const plan =
       (
         profile?.plan || "free"
       ).toLowerCase();
 
-
     configurarPlano(plan);
 
-
-    // futuramente carregamos
-    // números reais daqui
     await carregarEstatisticas(user.id);
 
-
   } catch (error) {
-
     console.error(
       "Erro ao carregar painel:",
       error
@@ -133,10 +112,7 @@ async function carregarPainel() {
     );
 
   } finally {
-
-    loading.style.display =
-      "none";
-
+    loading.style.display = "none";
   }
 }
 
@@ -146,21 +122,16 @@ async function carregarPainel() {
 // ==========================================
 
 function configurarPlano(plan) {
-
   const isPro =
     plan === "pro";
-
 
   planoAtual.textContent =
     isPro ? "PRO" : "FREE";
 
-
   planoBadge.textContent =
     isPro ? "PRO" : "FREE";
 
-
   if (isPro) {
-
     planoBadge.classList.remove(
       "plano-free"
     );
@@ -168,13 +139,11 @@ function configurarPlano(plan) {
     planoBadge.classList.add(
       "plano-pro"
     );
-
 
     btnAssinar.style.display =
       "none";
 
   } else {
-
     planoBadge.classList.remove(
       "plano-pro"
     );
@@ -183,11 +152,9 @@ function configurarPlano(plan) {
       "plano-free"
     );
 
-
     btnAssinar.style.display =
       "inline-block";
   }
-
 
   // =====================================
   // RECURSOS PRO
@@ -198,56 +165,42 @@ function configurarPlano(plan) {
       '[data-pro="true"]'
     );
 
-
   recursosPro.forEach(
     recurso => {
-
       const botao =
         recurso.querySelector(
           "[data-pro-button]"
         );
 
-
       if (isPro) {
-
         recurso.classList.remove(
           "bloqueado"
         );
 
         if (botao) {
-
           botao.disabled = false;
 
           botao.onclick = () => {
-
             alert(
               "Recurso PRO liberado!"
             );
-
           };
         }
 
       } else {
-
         recurso.classList.add(
           "bloqueado"
         );
 
-
         if (botao) {
-
           botao.disabled = false;
 
           botao.onclick = () => {
-
             window.location.href =
               "planos.html";
-
           };
         }
-
       }
-
     }
   );
 }
@@ -257,37 +210,68 @@ function configurarPlano(plan) {
 // ESTATÍSTICAS
 // ==========================================
 
-async function carregarEstatisticas(
-  userId
-) {
-
+async function carregarEstatisticas(userId) {
   try {
 
     // CLIENTES
-
     const {
-  count: clientesCount,
-  error: clientesError
-} =
-  await supabaseClient
-    .from("clients")
-    .select("*", {
-      count: "exact",
-      head: true
-    })
-    .eq("user_id", userId);
+      count: clientesCount,
+      error: clientesError
+    } =
+      await supabaseClient
+        .from("clients")
+        .select("*", {
+          count: "exact",
+          head: true
+        })
+        .eq("user_id", userId);
 
-if (clientesError) {
-  console.error(
-    "Erro ao contar clientes:",
-    clientesError
-  );
-} else {
-  document.getElementById(
-    "totalClientes"
-  ).textContent =
-    clientesCount || 0;
+    if (clientesError) {
+      console.error(
+        "Erro ao contar clientes:",
+        clientesError
+      );
+    } else {
+      document.getElementById(
+        "totalClientes"
+      ).textContent =
+        clientesCount || 0;
+    }
+
+    // PROPOSTAS
+    const {
+      count: propostasCount,
+      error: propostasError
+    } =
+      await supabaseClient
+        .from("proposals")
+        .select("*", {
+          count: "exact",
+          head: true
+        })
+        .eq("user_id", userId);
+
+    if (propostasError) {
+      console.error(
+        "Erro ao contar propostas:",
+        propostasError
+      );
+    } else {
+      document.getElementById(
+        "totalPropostas"
+      ).textContent =
+        propostasCount || 0;
+    }
+
+  } catch (error) {
+    console.error(
+      "Erro nas estatísticas:",
+      error
+    );
+  }
 }
+
+
 // ==========================================
 // LOGOUT
 // ==========================================
@@ -295,12 +279,10 @@ if (clientesError) {
 btnSair.addEventListener(
   "click",
   async () => {
-
     await supabaseClient.auth.signOut();
 
     window.location.href =
       "login.html";
-
   }
 );
 
