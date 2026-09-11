@@ -1,187 +1,569 @@
-const search = document.getElementById("proposalSearch");
-const statusFilter = document.getElementById("statusFilter");
+// ==========================================
+// SUPABASE
+// ==========================================
 
-let allProposals = [];
+const SUPABASE_URL =
+  "https://pdmpyietjlwqfqxdcztd.supabase.co";
 
-search.addEventListener("input", renderProposals);
-statusFilter.addEventListener("change", renderProposals);
+const SUPABASE_KEY =
+  "sb_publishable_qhcsSm4VcaZcIP_d5JBYRQ_5jmCo0WT";
 
-async function loadProposals() {
-  const user = await getSessionUser();
+const supabaseClient =
+  window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+  );
 
-  if (!user) return;
 
-  const { data, error } = await supabaseClient
-    .from("proposals")
-    .select("*")
-    .order("created_at", {
-      ascending: false
-    });
+// ==========================================
+// VARIÁVEIS
+// ==========================================
 
-  if (error) {
-    console.error("Erro ao carregar propostas:", error);
-    alert("Erro ao carregar propostas.");
+let usuarioAtual = null;
+let clientes = [];
+
+
+// ==========================================
+// ELEMENTOS
+// ==========================================
+
+const clienteSelect =
+  document.getElementById("cliente");
+
+const tituloInput =
+  document.getElementById("titulo");
+
+const valorInput =
+  document.getElementById("valor");
+
+const prazoInput =
+  document.getElementById("prazo");
+
+const descricaoInput =
+  document.getElementById("descricao");
+
+const observacoesInput =
+  document.getElementById("observacoes");
+
+const btnSalvar =
+  document.getElementById("btnSalvar");
+
+const listaPropostas =
+  document.getElementById("listaPropostas");
+
+
+// ==========================================
+// INICIAR
+// ==========================================
+
+async function iniciar() {
+
+  const {
+    data: { user },
+    error
+  } =
+    await supabaseClient.auth.getUser();
+
+
+  if (error || !user) {
+
+    window.location.href =
+      "index.html";
+
     return;
   }
 
-  allProposals = data || [];
 
-  renderProposals();
+  usuarioAtual = user;
+
+
+  await carregarClientes();
+
+  await carregarPropostas();
 }
 
-async function deleteProposal(id) {
-  if (!confirm("Excluir esta proposta?")) return;
 
-  const { error } = await supabaseClient
-    .from("proposals")
-    .delete()
-    .eq("id", id);
+// ==========================================
+// CARREGAR CLIENTES
+// ==========================================
+
+async function carregarClientes() {
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient
+      .from("clients")
+      .select("*")
+      .eq(
+        "user_id",
+        usuarioAtual.id
+      )
+      .order(
+        "created_at",
+        {
+          ascending: false
+        }
+      );
+
 
   if (error) {
-    console.error(error);
-    alert("Erro ao excluir proposta.");
-    return;
-  }
 
-  await loadProposals();
-}
-
-async function setStatus(id, status) {
-  const { error } = await supabaseClient
-    .from("proposals")
-    .update({
-      status: status
-    })
-    .eq("id", id);
-
-  if (error) {
-    console.error(error);
-    alert("Erro ao alterar status.");
-    return;
-  }
-
-  await loadProposals();
-}
-
-function renderProposals() {
-  const q = search.value.toLowerCase();
-  const status = statusFilter.value;
-
-  const items = allProposals.filter((proposal) => {
-    const matchesSearch = [
-      proposal.title,
-      proposal.client_name
-    ]
-      .join(" ")
-      .toLowerCase()
-      .includes(q);
-
-    const matchesStatus =
-      !status ||
-      proposal.status === status;
-
-    return matchesSearch && matchesStatus;
-  });
-
-  const box =
-    document.getElementById("proposalList");
-
-  if (!items.length) {
-    box.innerHTML =
-      '<div class="empty-state">Nenhuma proposta encontrada.</div>';
+    console.error(
+      "Erro clientes:",
+      error
+    );
 
     return;
   }
 
-  box.innerHTML = `
-    <table class="data-table">
 
-      <thead>
-        <tr>
-          <th>Proposta</th>
-          <th>Cliente</th>
-          <th>Valor</th>
-          <th>Status</th>
-          <th>Ações</th>
-        </tr>
-      </thead>
+  clientes =
+    data || [];
 
-      <tbody>
 
-        ${items
-          .map(
-            (proposal) => `
-            <tr>
-
-              <td>
-                <b>${proposal.title}</b>
-              </td>
-
-              <td>
-                ${proposal.client_name}
-              </td>
-
-              <td>
-                ${moneyBR(proposal.value)}
-              </td>
-
-              <td>
-                <span class="tag ${statusClass(
-                  proposal.status
-                )}">
-                  ${proposal.status}
-                </span>
-              </td>
-
-              <td class="table-actions">
-
-                <a
-                  class="small-btn"
-                 href="proposta.html?token=${proposal.public_token}"
-                >
-                  Abrir
-                </a>
-
-                <button
-                  class="small-btn"
-                  onclick="setStatus(
-                    '${proposal.id}',
-                    'Aguardando'
-                  )"
-                >
-                  Aguardando
-                </button>
-
-                <button
-                  class="small-btn"
-                  onclick="setStatus(
-                    '${proposal.id}',
-                    'Aceita'
-                  )"
-                >
-                  Aceita
-                </button>
-
-                <button
-                  class="small-btn danger"
-                  onclick="deleteProposal(
-                    '${proposal.id}'
-                  )"
-                >
-                  Excluir
-                </button>
-
-              </td>
-
-            </tr>
-          `
-          )
-          .join("")}
-
-      </tbody>
-
-    </table>
+  clienteSelect.innerHTML = `
+    <option value="">
+      Selecione um cliente
+    </option>
   `;
+
+
+  clientes.forEach(
+    cliente => {
+
+      const option =
+        document.createElement(
+          "option"
+        );
+
+      option.value =
+        cliente.id;
+
+      option.textContent =
+        cliente.name;
+
+      clienteSelect.appendChild(
+        option
+      );
+
+    }
+  );
 }
 
-loadProposals();
+
+// ==========================================
+// CRIAR PROPOSTA
+// ==========================================
+
+btnSalvar.addEventListener(
+  "click",
+  async () => {
+
+    const clientId =
+      clienteSelect.value;
+
+    const titulo =
+      tituloInput.value.trim();
+
+    const valor =
+      Number(
+        valorInput.value
+      );
+
+    const prazo =
+      prazoInput.value.trim();
+
+    const descricao =
+      descricaoInput.value.trim();
+
+    const observacoes =
+      observacoesInput.value.trim();
+
+
+    if (!clientId) {
+
+      alert(
+        "Selecione um cliente."
+      );
+
+      return;
+    }
+
+
+    if (!titulo) {
+
+      alert(
+        "Informe o título da proposta."
+      );
+
+      return;
+    }
+
+
+    if (
+      !valor ||
+      valor <= 0
+    ) {
+
+      alert(
+        "Informe um valor válido."
+      );
+
+      return;
+    }
+
+
+    const cliente =
+      clientes.find(
+        item =>
+          item.id === clientId
+      );
+
+
+    if (!cliente) {
+
+      alert(
+        "Cliente não encontrado."
+      );
+
+      return;
+    }
+
+
+    btnSalvar.disabled = true;
+
+    btnSalvar.textContent =
+      "Criando...";
+
+
+    const {
+      error
+    } =
+      await supabaseClient
+        .from("proposals")
+        .insert({
+
+          user_id:
+            usuarioAtual.id,
+
+          client_id:
+            cliente.id,
+
+          client_name:
+            cliente.name,
+
+          client_phone:
+            cliente.phone,
+
+          title:
+            titulo,
+
+          value:
+            valor,
+
+          deadline:
+            prazo,
+
+          description:
+            descricao,
+
+          notes:
+            observacoes
+
+        });
+
+
+    btnSalvar.disabled = false;
+
+    btnSalvar.textContent =
+      "Criar proposta";
+
+
+    if (error) {
+
+      console.error(
+        "Erro ao criar proposta:",
+        error
+      );
+
+      alert(
+        "Erro ao criar proposta."
+      );
+
+      return;
+    }
+
+
+    clienteSelect.value = "";
+
+    tituloInput.value = "";
+
+    valorInput.value = "";
+
+    prazoInput.value = "";
+
+    descricaoInput.value = "";
+
+    observacoesInput.value = "";
+
+
+    await carregarPropostas();
+
+  }
+);
+
+
+// ==========================================
+// CARREGAR PROPOSTAS
+// ==========================================
+
+async function carregarPropostas() {
+
+  listaPropostas.innerHTML = `
+    <p class="vazio">
+      Carregando...
+    </p>
+  `;
+
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient
+      .from("proposals")
+      .select("*")
+      .eq(
+        "user_id",
+        usuarioAtual.id
+      );
+
+
+  if (error) {
+
+    console.error(
+      "Erro propostas:",
+      error
+    );
+
+
+    listaPropostas.innerHTML = `
+      <p class="vazio">
+        Erro ao carregar propostas.
+      </p>
+    `;
+
+    return;
+  }
+
+
+  if (
+    !data ||
+    data.length === 0
+  ) {
+
+    listaPropostas.innerHTML = `
+      <p class="vazio">
+        Você ainda não possui propostas.
+      </p>
+    `;
+
+    return;
+  }
+
+
+  listaPropostas.innerHTML = "";
+
+
+  data.forEach(
+    proposta => {
+
+      const card =
+        document.createElement(
+          "div"
+        );
+
+
+      card.className =
+        "proposta";
+
+
+      const valor =
+        Number(
+          proposta.value || 0
+        )
+        .toLocaleString(
+          "pt-BR",
+          {
+            style: "currency",
+            currency: "BRL"
+          }
+        );
+
+
+      card.innerHTML = `
+
+        <div class="proposta-info">
+
+          <h3>
+            ${escapar(
+              proposta.title ||
+              "Sem título"
+            )}
+          </h3>
+
+          <p>
+            👤 ${escapar(
+              proposta.client_name ||
+              "-"
+            )}
+          </p>
+
+          <p>
+            📞 ${escapar(
+              proposta.client_phone ||
+              "-"
+            )}
+          </p>
+
+          <p class="valor">
+            ${valor}
+          </p>
+
+          <p>
+            ⏱️ Prazo:
+            ${escapar(
+              proposta.deadline ||
+              "-"
+            )}
+          </p>
+
+        </div>
+
+
+        <div class="proposta-acoes">
+
+          <button
+            class="btn btn-danger"
+            onclick="
+              excluirProposta(
+                '${proposta.id}'
+              )
+            "
+          >
+            Excluir
+          </button>
+
+        </div>
+
+      `;
+
+
+      listaPropostas.appendChild(
+        card
+      );
+
+    }
+  );
+}
+
+
+// ==========================================
+// EXCLUIR PROPOSTA
+// ==========================================
+
+async function excluirProposta(
+  id
+) {
+
+  const confirmar =
+    confirm(
+      "Deseja excluir esta proposta?"
+    );
+
+
+  if (!confirmar) {
+    return;
+  }
+
+
+  const {
+    error
+  } =
+    await supabaseClient
+      .from("proposals")
+      .delete()
+      .eq(
+        "id",
+        id
+      )
+      .eq(
+        "user_id",
+        usuarioAtual.id
+      );
+
+
+  if (error) {
+
+    console.error(
+      "Erro excluir:",
+      error
+    );
+
+    alert(
+      "Erro ao excluir proposta."
+    );
+
+    return;
+  }
+
+
+  await carregarPropostas();
+}
+
+
+window.excluirProposta =
+  excluirProposta;
+
+
+// ==========================================
+// ESCAPAR HTML
+// ==========================================
+
+function escapar(
+  valor
+) {
+
+  return String(
+    valor
+  )
+    .replaceAll(
+      "&",
+      "&amp;"
+    )
+    .replaceAll(
+      "<",
+      "&lt;"
+    )
+    .replaceAll(
+      ">",
+      "&gt;"
+    )
+    .replaceAll(
+      '"',
+      "&quot;"
+    )
+    .replaceAll(
+      "'",
+      "&#039;"
+    );
+}
+
+
+// ==========================================
+// INICIAR
+// ==========================================
+
+iniciar();
