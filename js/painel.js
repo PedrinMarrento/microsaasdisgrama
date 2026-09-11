@@ -266,42 +266,28 @@ async function carregarEstatisticas(
     // CLIENTES
 
     const {
-      count: clientesCount
-    } =
-      await supabaseClient
-        .from("clientes")
-        .select(
-          "*",
-          {
-            count: "exact",
-            head: true
-          }
-        );
+  count: clientesCount,
+  error: clientesError
+} =
+  await supabaseClient
+    .from("clients")
+    .select("*", {
+      count: "exact",
+      head: true
+    })
+    .eq("user_id", userId);
 
-
-    if (
-      clientesCount !== null
-    ) {
-
-      document.getElementById(
-        "totalClientes"
-      ).textContent =
-        clientesCount;
-
-    }
-
-
-  } catch (error) {
-
-    console.log(
-      "Estatísticas ainda não configuradas:",
-      error
-    );
-
-  }
+if (clientesError) {
+  console.error(
+    "Erro ao contar clientes:",
+    clientesError
+  );
+} else {
+  document.getElementById(
+    "totalClientes"
+  ).textContent =
+    clientesCount || 0;
 }
-
-
 // ==========================================
 // LOGOUT
 // ==========================================
