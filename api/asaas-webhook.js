@@ -16,16 +16,13 @@ module.exports = async function handler(req, res) {
 
     console.log("ASAAS EVENTO:", event);
 
-    // ==========================================
-    // CHECKOUT PAGO -> PRO + SALVA CUSTOMER
-    // ==========================================
+    // ==================================================
+    // 1. CHECKOUT PAGO -> USUÁRIO VIRA PRO
+    // ==================================================
     if (event === "CHECKOUT_PAID") {
       const checkout = req.body?.checkout;
 
-      console.log(
-        "CHECKOUT:",
-        JSON.stringify(checkout)
-      );
+      console.log("CHECKOUT:", JSON.stringify(checkout));
 
       if (!checkout?.externalReference) {
         console.log("Checkout sem externalReference");
@@ -34,25 +31,30 @@ module.exports = async function handler(req, res) {
 
       const userId = checkout.externalReference;
 
-      await atualizarProfile(userId, {
+      const dados = {
         plan: "pro",
-        asaas_checkout_id: checkout.id || null,
-        asaas_customer_id: checkout.customer || null,
         subscription_status: "CHECKOUT_PAID",
         subscription_updated_at: new Date().toISOString()
-      });
+      };
 
-      console.log(
-        "Usuário virou PRO:",
-        userId
-      );
+      if (checkout.id) {
+        dados.asaas_checkout_id = checkout.id;
+      }
+
+      if (checkout.customer) {
+        dados.asaas_customer_id = checkout.customer;
+      }
+
+      await atualizarProfile(userId, dados);
+
+      console.log("Usuário virou PRO:", userId);
 
       return res.status(200).json({ ok: true });
     }
 
-    // ==========================================
-    // ASSINATURA CRIADA -> VINCULAR AO CUSTOMER
-    // ==========================================
+    // ==================================================
+    // 2. ASSINATURA CRIADA
+    // ==================================================
     if (event === "SUBSCRIPTION_CREATED") {
       const subscription = req.body?.subscription;
 
@@ -62,23 +64,32 @@ module.exports = async function handler(req, res) {
       );
 
       if (!subscription?.id) {
+        console.log("SUBSCRIPTION_CREATED sem ID");
         return res.status(200).json({ ok: true });
       }
 
-      let userId = subscription.externalReference || null;
+      let profiles = [];
 
-      if (!userId && subscription.customer) {
-        const profiles = await buscarProfile(
+      // Primeiro tenta externalReference
+      if (subscription.externalReference) {
+        profiles = await buscarProfile(
+          "id",
+          subscription.externalReference
+        );
+      }
+
+      // Depois tenta customer
+      if (
+        profiles.length === 0 &&
+        subscription.customer
+      ) {
+        profiles = await buscarProfile(
           "asaas_customer_id",
           subscription.customer
         );
-
-        if (profiles.length > 0) {
-          userId = profiles[0].id;
-        }
       }
 
-      if (!userId) {
+      if (profiles.length === 0) {
         console.log(
           "Assinatura sem usuário associado:",
           subscription.id
@@ -87,15 +98,22 @@ module.exports = async function handler(req, res) {
         return res.status(200).json({ ok: true });
       }
 
-      await atualizarProfile(userId, {
+      const userId = profiles[0].id;
+
+      const dados = {
         asaas_subscription_id: subscription.id,
-        asaas_customer_id: subscription.customer || null,
         subscription_status: "SUBSCRIPTION_CREATED",
         subscription_updated_at: new Date().toISOString()
-      });
+      };
+
+      if (subscription.customer) {
+        dados.asaas_customer_id = subscription.customer;
+      }
+
+      await atualizarProfile(userId, dados);
 
       console.log(
-        "Assinatura vinculada:",
+        "ASSINATURA VINCULADA:",
         subscription.id,
         "->",
         userId
@@ -104,19 +122,26 @@ module.exports = async function handler(req, res) {
       return res.status(200).json({ ok: true });
     }
 
-    // ==========================================
-    // ASSINATURA CANCELADA / INATIVADA -> FREE
-    // ==========================================
+    // ==================================================
+    // 3. ASSINATURA CANCELADA -> FREE
+    // ==================================================
     if (
       event === "SUBSCRIPTION_DELETED" ||
       event === "SUBSCRIPTION_INACTIVATED"
     ) {
       const subscription = req.body?.subscription;
 
+      console.log(
+        "ASSINATURA CANCELADA:",
+        JSON.stringify(subscription)
+      );
+
       if (!subscription?.id) {
+        console.log("Cancelamento sem ID da assinatura");
         return res.status(200).json({ ok: true });
       }
 
+      // Procura primeiro pelo ID exato da assinatura
       let profiles = await buscarProfile(
         "asaas_subscription_id",
         subscription.id
@@ -158,127 +183,109 @@ module.exports = async function handler(req, res) {
       return res.status(200).json({ ok: true });
     }
 
-    // ==========================================
-    // PAGAMENTO RECEBIDO
-    // ==========================================
-    // ==========================================
-// PAGAMENTOS
-// ==========================================
-const payment = req.body?.payment;
+    // ==================================================
+    // 4. EVENTOS DE PAGAMENTO
+    // ==================================================
+    if (
+      event === "PAYMENT_CREATED" ||
+      event === "PAYMENT_CONFIRMED" ||
+      event === "PAYMENT_RECEIVED"
+    ) {
+      const payment = req.body?.payment;
 
-if (payment.subscription) {
-  console.log(
-    "Pagamento possui subscription:",
-    payment.subscription
-  );
+      if (!payment) {
+        console.log("Evento de pagamento sem payment");
+        return res.status(200).json({ ok: true });
+      }
 
-  let profiles = [];
+      console.log(
+        "PAGAMENTO:",
+        event,
+        payment.id
+      );
 
-  // 1. Tenta externalReference
-  if (payment.externalReference) {
-    profiles = await buscarProfile(
-      "id",
-      payment.externalReference
-    );
-  }
+      if (payment.subscription) {
+        console.log(
+          "Pagamento possui subscription:",
+          payment.subscription
+        );
 
-  // 2. Tenta customer do pagamento
-  if (
-    profiles.length === 0 &&
-    payment.customer
-  ) {
-    profiles = await buscarProfile(
-      "asaas_customer_id",
-      payment.customer
-    );
-  }
+        let profiles = [];
 
-  // 3. Se ainda não encontrou, tenta usuário
-  // que acabou de criar checkout e está PRO,
-  // mas ainda não possui assinatura vinculada.
-  if (profiles.length === 0) {
-    const response = await fetch(
-      `${process.env.SUPABASE_URL}/rest/v1/profiles?plan=eq.pro&asaas_subscription_id=is.null&order=subscription_updated_at.desc&limit=1&select=id`,
-      {
-        headers: {
-          apikey:
-            process.env.SUPABASE_SERVICE_ROLE_KEY,
+        // Tenta pelo externalReference
+        if (payment.externalReference) {
+          profiles = await buscarProfile(
+            "id",
+            payment.externalReference
+          );
+        }
 
-          Authorization:
-            `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`
+        // Tenta pelo customer
+        if (
+          profiles.length === 0 &&
+          payment.customer
+        ) {
+          profiles = await buscarProfile(
+            "asaas_customer_id",
+            payment.customer
+          );
+        }
+
+        /*
+         * Último fallback.
+         *
+         * Procura o checkout PRO mais recente que ainda
+         * não possui uma assinatura vinculada.
+         *
+         * Serve para o fluxo atual do checkout Asaas,
+         * onde o payment está trazendo subscription,
+         * mas não externalReference.
+         */
+        if (profiles.length === 0) {
+          profiles =
+            await buscarProSemAssinaturaMaisRecente();
+        }
+
+        if (profiles.length > 0) {
+          const userId = profiles[0].id;
+
+          const dados = {
+            asaas_subscription_id:
+              payment.subscription,
+
+            subscription_status: event,
+
+            subscription_updated_at:
+              new Date().toISOString()
+          };
+
+          if (payment.customer) {
+            dados.asaas_customer_id =
+              payment.customer;
+          }
+
+          await atualizarProfile(userId, dados);
+
+          console.log(
+            "ASSINATURA VINCULADA PELO PAGAMENTO:",
+            payment.subscription,
+            "->",
+            userId
+          );
+        } else {
+          console.log(
+            "Não foi possível vincular subscription:",
+            payment.subscription
+          );
         }
       }
-    );
 
-    const data = await response.json();
-
-    if (Array.isArray(data)) {
-      profiles = data;
+      return res.status(200).json({ ok: true });
     }
-  }
 
-  if (profiles.length > 0) {
-    const userId = profiles[0].id;
-
-    await atualizarProfile(userId, {
-      asaas_subscription_id:
-        payment.subscription,
-
-      asaas_customer_id:
-        payment.customer || null,
-
-      subscription_status: event,
-
-      subscription_updated_at:
-        new Date().toISOString()
-    });
-
-    console.log(
-      "ASSINATURA VINCULADA:",
-      payment.subscription,
-      "->",
-      userId
-    );
-  } else {
-    console.log(
-      "Não foi possível vincular subscription:",
-      payment.subscription
-    );
-  }
-}
-
-    // fallback: procura usuário ainda sem subscription
-    // pelo checkout já salvo não é possível direto daqui,
-    // então só atualizamos se tivermos vínculo seguro
-    if (profiles.length > 0) {
-      const userId = profiles[0].id;
-
-      await atualizarProfile(userId, {
-        asaas_subscription_id: payment.subscription,
-        subscription_status: event,
-        subscription_updated_at: new Date().toISOString()
-      });
-
-      console.log(
-        "Subscription salva pelo pagamento:",
-        payment.subscription,
-        "->",
-        userId
-      );
-    } else {
-      console.log(
-        "Pagamento possui subscription:",
-        payment.subscription
-      );
-    }
-  }
-
-  return res.status(200).json({ ok: true });
-}
-
-    // ==========================================
-    // INADIMPLÊNCIA / REEMBOLSO
-    // ==========================================
+    // ==================================================
+    // 5. PAGAMENTO PROBLEMÁTICO
+    // ==================================================
     if (
       event === "PAYMENT_OVERDUE" ||
       event === "PAYMENT_REFUNDED" ||
@@ -295,16 +302,18 @@ if (payment.subscription) {
       return res.status(200).json({ ok: true });
     }
 
+    // ==================================================
+    // EVENTO NÃO UTILIZADO
+    // ==================================================
+    console.log("Evento ignorado:", event);
+
     return res.status(200).json({
       ok: true,
       ignored: true
     });
 
   } catch (error) {
-    console.error(
-      "Erro webhook Asaas:",
-      error
-    );
+    console.error("Erro webhook Asaas:", error);
 
     return res.status(500).json({
       error: "Erro interno"
@@ -313,6 +322,9 @@ if (payment.subscription) {
 };
 
 
+// ==================================================
+// BUSCAR PROFILE POR UMA COLUNA
+// ==================================================
 async function buscarProfile(campo, valor) {
   const response = await fetch(
     `${process.env.SUPABASE_URL}/rest/v1/profiles?${campo}=eq.${encodeURIComponent(valor)}&select=id`,
@@ -339,9 +351,47 @@ async function buscarProfile(campo, valor) {
 }
 
 
+// ==================================================
+// BUSCAR PRO MAIS RECENTE SEM ASSINATURA
+// ==================================================
+async function buscarProSemAssinaturaMaisRecente() {
+  const url =
+    `${process.env.SUPABASE_URL}` +
+    `/rest/v1/profiles` +
+    `?plan=eq.pro` +
+    `&asaas_subscription_id=is.null` +
+    `&order=subscription_updated_at.desc` +
+    `&limit=1` +
+    `&select=id`;
+
+  const response = await fetch(url, {
+    headers: {
+      apikey:
+        process.env.SUPABASE_SERVICE_ROLE_KEY,
+
+      Authorization:
+        `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`
+    }
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      `Erro procurando PRO sem assinatura: ${JSON.stringify(data)}`
+    );
+  }
+
+  return Array.isArray(data) ? data : [];
+}
+
+
+// ==================================================
+// ATUALIZAR PROFILE
+// ==================================================
 async function atualizarProfile(userId, dados) {
   const response = await fetch(
-    `${process.env.SUPABASE_URL}/rest/v1/profiles?id=eq.${userId}`,
+    `${process.env.SUPABASE_URL}/rest/v1/profiles?id=eq.${encodeURIComponent(userId)}`,
     {
       method: "PATCH",
 
