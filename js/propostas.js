@@ -1,5 +1,5 @@
 // ==========================================
-// SUPABASE
+// CONFIGURAÇÃO SUPABASE
 // ==========================================
 
 const SUPABASE_URL =
@@ -58,28 +58,35 @@ const listaPropostas =
 
 async function iniciar() {
 
-  const {
-    data: { user },
-    error
-  } =
-    await supabaseClient.auth.getUser();
+  try {
 
+    const {
+      data: { user },
+      error
+    } =
+      await supabaseClient.auth.getUser();
 
-  if (error || !user) {
+    if (error || !user) {
 
-    window.location.href =
-      "index.html";
+      window.location.href =
+        "login.html";
 
-    return;
+      return;
+    }
+
+    usuarioAtual = user;
+
+    await carregarClientes();
+    await carregarPropostas();
+
+  } catch (error) {
+
+    console.error(
+      "Erro ao iniciar:",
+      error
+    );
+
   }
-
-
-  usuarioAtual = user;
-
-
-  await carregarClientes();
-
-  await carregarPropostas();
 }
 
 
@@ -107,21 +114,17 @@ async function carregarClientes() {
         }
       );
 
-
   if (error) {
 
     console.error(
-      "Erro clientes:",
+      "Erro ao carregar clientes:",
       error
     );
 
     return;
   }
 
-
-  clientes =
-    data || [];
-
+  clientes = data || [];
 
   clienteSelect.innerHTML = `
     <option value="">
@@ -129,27 +132,136 @@ async function carregarClientes() {
     </option>
   `;
 
+  clientes.forEach(cliente => {
 
-  clientes.forEach(
-    cliente => {
-
-      const option =
-        document.createElement(
-          "option"
-        );
-
-      option.value =
-        cliente.id;
-
-      option.textContent =
-        cliente.name;
-
-      clienteSelect.appendChild(
-        option
+    const option =
+      document.createElement(
+        "option"
       );
 
-    }
-  );
+    option.value =
+      cliente.id;
+
+    option.textContent =
+      cliente.name;
+
+    clienteSelect.appendChild(
+      option
+    );
+
+  });
+}
+
+
+// ==========================================
+// VERIFICAR LIMITE DO PLANO
+// ==========================================
+
+async function podeCriarProposta() {
+
+  // Buscar plano do usuário
+
+  const {
+    data: profile,
+    error: profileError
+  } =
+    await supabaseClient
+      .from("profiles")
+      .select("plan")
+      .eq(
+        "id",
+        usuarioAtual.id
+      )
+      .single();
+
+  if (profileError) {
+
+    console.error(
+      "Erro ao verificar plano:",
+      profileError
+    );
+
+    alert(
+      "Não foi possível verificar seu plano."
+    );
+
+    return false;
+  }
+
+
+  const plano =
+    (
+      profile?.plan ||
+      "free"
+    ).toLowerCase();
+
+
+  // PRO NÃO TEM LIMITE
+
+  if (plano === "pro") {
+
+    return true;
+
+  }
+
+
+  // ==========================================
+  // CONTAR PROPOSTAS DO FREE
+  // ==========================================
+
+  const {
+    count,
+    error: countError
+  } =
+    await supabaseClient
+      .from("proposals")
+      .select(
+        "*",
+        {
+          count: "exact",
+          head: true
+        }
+      )
+      .eq(
+        "user_id",
+        usuarioAtual.id
+      );
+
+
+  if (countError) {
+
+    console.error(
+      "Erro ao contar propostas:",
+      countError
+    );
+
+    alert(
+      "Erro ao verificar suas propostas."
+    );
+
+    return false;
+  }
+
+
+  // ==========================================
+  // LIMITE FREE = 3
+  // ==========================================
+
+  if ((count || 0) >= 3) {
+
+    alert(
+      "Você atingiu o limite de 3 propostas do plano FREE.\n\n" +
+      "Assine o PRO para criar propostas ilimitadas."
+    );
+
+    window.location.href =
+      "planos.html";
+
+    return false;
+  }
+
+
+  return true;
 }
 
 
@@ -181,6 +293,10 @@ btnSalvar.addEventListener(
     const observacoes =
       observacoesInput.value.trim();
 
+
+    // ========================================
+    // VALIDAR CAMPOS
+    // ========================================
 
     if (!clientId) {
 
@@ -232,11 +348,34 @@ btnSalvar.addEventListener(
     }
 
 
+    // ========================================
+    // VERIFICAR FREE / PRO
+    // ========================================
+
+    const permitido =
+      await podeCriarProposta();
+
+
+    if (!permitido) {
+
+      return;
+
+    }
+
+
+    // ========================================
+    // DESABILITAR BOTÃO
+    // ========================================
+
     btnSalvar.disabled = true;
 
     btnSalvar.textContent =
       "Criando...";
 
+
+    // ========================================
+    // SALVAR NO SUPABASE
+    // ========================================
 
     const {
       error
@@ -255,7 +394,7 @@ btnSalvar.addEventListener(
             cliente.name,
 
           client_phone:
-            cliente.phone,
+            cliente.phone || null,
 
           title:
             titulo,
@@ -275,11 +414,19 @@ btnSalvar.addEventListener(
         });
 
 
+    // ========================================
+    // REATIVAR BOTÃO
+    // ========================================
+
     btnSalvar.disabled = false;
 
     btnSalvar.textContent =
       "Criar proposta";
 
+
+    // ========================================
+    // TRATAR ERRO
+    // ========================================
 
     if (error) {
 
@@ -287,6 +434,25 @@ btnSalvar.addEventListener(
         "Erro ao criar proposta:",
         error
       );
+
+
+      if (
+        error.code === "42501" ||
+        error.message
+          ?.toLowerCase()
+          .includes(
+            "row-level security"
+          )
+      ) {
+
+        alert(
+          "Você não tem permissão para criar esta proposta.\n\n" +
+          "Se você estiver no plano FREE, verifique se já atingiu o limite de 3 propostas."
+        );
+
+        return;
+      }
+
 
       alert(
         "Erro ao criar proposta."
@@ -296,18 +462,37 @@ btnSalvar.addEventListener(
     }
 
 
-    clienteSelect.value = "";
+    // ========================================
+    // LIMPAR FORMULÁRIO
+    // ========================================
 
-    tituloInput.value = "";
+    clienteSelect.value =
+      "";
 
-    valorInput.value = "";
+    tituloInput.value =
+      "";
 
-    prazoInput.value = "";
+    valorInput.value =
+      "";
 
-    descricaoInput.value = "";
+    prazoInput.value =
+      "";
 
-    observacoesInput.value = "";
+    descricaoInput.value =
+      "";
 
+    observacoesInput.value =
+      "";
+
+
+    alert(
+      "Proposta criada com sucesso!"
+    );
+
+
+    // ========================================
+    // ATUALIZAR LISTA
+    // ========================================
 
     await carregarPropostas();
 
@@ -344,10 +529,9 @@ async function carregarPropostas() {
   if (error) {
 
     console.error(
-      "Erro propostas:",
+      "Erro ao carregar propostas:",
       error
     );
-
 
     listaPropostas.innerHTML = `
       <p class="vazio">
@@ -358,6 +542,10 @@ async function carregarPropostas() {
     return;
   }
 
+
+  // ==========================================
+  // NENHUMA PROPOSTA
+  // ==========================================
 
   if (
     !data ||
@@ -374,26 +562,29 @@ async function carregarPropostas() {
   }
 
 
-  listaPropostas.innerHTML = "";
+  listaPropostas.innerHTML =
+    "";
 
 
-  data.forEach(
-    proposta => {
+  // ==========================================
+  // MOSTRAR PROPOSTAS
+  // ==========================================
 
-      const card =
-        document.createElement(
-          "div"
-        );
+  data.forEach(proposta => {
+
+    const card =
+      document.createElement(
+        "div"
+      );
+
+    card.className =
+      "proposta";
 
 
-      card.className =
-        "proposta";
-
-
-      const valor =
-        Number(
-          proposta.value || 0
-        )
+    const valorFormatado =
+      Number(
+        proposta.value || 0
+      )
         .toLocaleString(
           "pt-BR",
           {
@@ -403,70 +594,67 @@ async function carregarPropostas() {
         );
 
 
-      card.innerHTML = `
+    card.innerHTML = `
 
-        <div class="proposta-info">
+      <div class="proposta-info">
 
-          <h3>
-            ${escapar(
-              proposta.title ||
-              "Sem título"
-            )}
-          </h3>
+        <h3>
+          ${escapar(
+            proposta.title ||
+            "Sem título"
+          )}
+        </h3>
 
-          <p>
-            👤 ${escapar(
-              proposta.client_name ||
-              "-"
-            )}
-          </p>
+        <p>
+          👤
+          ${escapar(
+            proposta.client_name ||
+            "-"
+          )}
+        </p>
 
-          <p>
-            📞 ${escapar(
-              proposta.client_phone ||
-              "-"
-            )}
-          </p>
+        <p>
+          📞
+          ${escapar(
+            proposta.client_phone ||
+            "-"
+          )}
+        </p>
 
-          <p class="valor">
-            ${valor}
-          </p>
+        <p class="valor">
+          ${valorFormatado}
+        </p>
 
-          <p>
-            ⏱️ Prazo:
-            ${escapar(
-              proposta.deadline ||
-              "-"
-            )}
-          </p>
+        <p>
+          ⏱️ Prazo:
+          ${escapar(
+            proposta.deadline ||
+            "-"
+          )}
+        </p>
 
-        </div>
-
-
-        <div class="proposta-acoes">
-
-          <button
-            class="btn btn-danger"
-            onclick="
-              excluirProposta(
-                '${proposta.id}'
-              )
-            "
-          >
-            Excluir
-          </button>
-
-        </div>
-
-      `;
+      </div>
 
 
-      listaPropostas.appendChild(
-        card
-      );
+      <div class="proposta-acoes">
 
-    }
-  );
+        <button
+          class="btn btn-danger"
+          onclick="excluirProposta('${proposta.id}')"
+        >
+          Excluir
+        </button>
+
+      </div>
+
+    `;
+
+
+    listaPropostas.appendChild(
+      card
+    );
+
+  });
 }
 
 
@@ -474,9 +662,7 @@ async function carregarPropostas() {
 // EXCLUIR PROPOSTA
 // ==========================================
 
-async function excluirProposta(
-  id
-) {
+async function excluirProposta(id) {
 
   const confirmar =
     confirm(
@@ -485,7 +671,9 @@ async function excluirProposta(
 
 
   if (!confirmar) {
+
     return;
+
   }
 
 
@@ -508,7 +696,7 @@ async function excluirProposta(
   if (error) {
 
     console.error(
-      "Erro excluir:",
+      "Erro ao excluir proposta:",
       error
     );
 
@@ -529,32 +717,33 @@ window.excluirProposta =
 
 
 // ==========================================
-// ESCAPAR HTML
+// PROTEÇÃO CONTRA HTML INJETADO
 // ==========================================
 
-function escapar(
-  valor
-) {
+function escapar(valor) {
 
-  return String(
-    valor
-  )
+  return String(valor)
+
     .replaceAll(
       "&",
       "&amp;"
     )
+
     .replaceAll(
       "<",
       "&lt;"
     )
+
     .replaceAll(
       ">",
       "&gt;"
     )
+
     .replaceAll(
       '"',
       "&quot;"
     )
+
     .replaceAll(
       "'",
       "&#039;"
@@ -563,7 +752,7 @@ function escapar(
 
 
 // ==========================================
-// INICIAR
+// INICIAR PÁGINA
 // ==========================================
 
 iniciar();
