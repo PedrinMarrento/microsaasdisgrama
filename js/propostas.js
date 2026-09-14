@@ -57,9 +57,7 @@ const listaPropostas =
 // ==========================================
 
 async function iniciar() {
-
   try {
-
     const {
       data: { user },
       error
@@ -67,10 +65,7 @@ async function iniciar() {
       await supabaseClient.auth.getUser();
 
     if (error || !user) {
-
-      window.location.href =
-        "login.html";
-
+      window.location.href = "login.html";
       return;
     }
 
@@ -80,12 +75,10 @@ async function iniciar() {
     await carregarPropostas();
 
   } catch (error) {
-
     console.error(
       "Erro ao iniciar:",
       error
     );
-
   }
 }
 
@@ -95,7 +88,6 @@ async function iniciar() {
 // ==========================================
 
 async function carregarClientes() {
-
   const {
     data,
     error
@@ -115,7 +107,6 @@ async function carregarClientes() {
       );
 
   if (error) {
-
     console.error(
       "Erro ao carregar clientes:",
       error
@@ -133,7 +124,6 @@ async function carregarClientes() {
   `;
 
   clientes.forEach(cliente => {
-
     const option =
       document.createElement(
         "option"
@@ -148,19 +138,15 @@ async function carregarClientes() {
     clienteSelect.appendChild(
       option
     );
-
   });
 }
 
 
 // ==========================================
-// VERIFICAR LIMITE DO PLANO
+// VERIFICAR LIMITE FREE / PRO
 // ==========================================
 
 async function podeCriarProposta() {
-
-  // Buscar plano do usuário
-
   const {
     data: profile,
     error: profileError
@@ -175,7 +161,6 @@ async function podeCriarProposta() {
       .single();
 
   if (profileError) {
-
     console.error(
       "Erro ao verificar plano:",
       profileError
@@ -188,26 +173,15 @@ async function podeCriarProposta() {
     return false;
   }
 
-
   const plano =
     (
       profile?.plan ||
       "free"
     ).toLowerCase();
 
-
-  // PRO NÃO TEM LIMITE
-
   if (plano === "pro") {
-
     return true;
-
   }
-
-
-  // ==========================================
-  // CONTAR PROPOSTAS DO FREE
-  // ==========================================
 
   const {
     count,
@@ -227,9 +201,7 @@ async function podeCriarProposta() {
         usuarioAtual.id
       );
 
-
   if (countError) {
-
     console.error(
       "Erro ao contar propostas:",
       countError
@@ -242,13 +214,7 @@ async function podeCriarProposta() {
     return false;
   }
 
-
-  // ==========================================
-  // LIMITE FREE = 3
-  // ==========================================
-
   if ((count || 0) >= 3) {
-
     alert(
       "Você atingiu o limite de 3 propostas do plano FREE.\n\n" +
       "Assine o PRO para criar propostas ilimitadas."
@@ -260,8 +226,28 @@ async function podeCriarProposta() {
     return false;
   }
 
-
   return true;
+}
+
+
+// ==========================================
+// GERAR TOKEN
+// ==========================================
+
+function gerarToken() {
+  if (
+    window.crypto &&
+    window.crypto.randomUUID
+  ) {
+    return crypto.randomUUID();
+  }
+
+  return (
+    Date.now().toString(36) +
+    Math.random()
+      .toString(36)
+      .substring(2, 15)
+  );
 }
 
 
@@ -294,42 +280,29 @@ btnSalvar.addEventListener(
       observacoesInput.value.trim();
 
 
-    // ========================================
-    // VALIDAR CAMPOS
-    // ========================================
-
     if (!clientId) {
-
       alert(
         "Selecione um cliente."
       );
-
       return;
     }
 
-
     if (!titulo) {
-
       alert(
         "Informe o título da proposta."
       );
-
       return;
     }
-
 
     if (
       !valor ||
       valor <= 0
     ) {
-
       alert(
         "Informe um valor válido."
       );
-
       return;
     }
-
 
     const cliente =
       clientes.find(
@@ -337,45 +310,30 @@ btnSalvar.addEventListener(
           item.id === clientId
       );
 
-
     if (!cliente) {
-
       alert(
         "Cliente não encontrado."
       );
-
       return;
     }
 
-
-    // ========================================
-    // VERIFICAR FREE / PRO
-    // ========================================
 
     const permitido =
       await podeCriarProposta();
 
-
     if (!permitido) {
-
       return;
-
     }
 
 
-    // ========================================
-    // DESABILITAR BOTÃO
-    // ========================================
-
     btnSalvar.disabled = true;
-
     btnSalvar.textContent =
       "Criando...";
 
 
-    // ========================================
-    // SALVAR NO SUPABASE
-    // ========================================
+    const token =
+      gerarToken();
+
 
     const {
       error
@@ -383,7 +341,6 @@ btnSalvar.addEventListener(
       await supabaseClient
         .from("proposals")
         .insert({
-
           user_id:
             usuarioAtual.id,
 
@@ -409,32 +366,26 @@ btnSalvar.addEventListener(
             descricao,
 
           notes:
-            observacoes
+            observacoes,
 
+          token:
+            token,
+
+          status:
+            "pending"
         });
 
 
-    // ========================================
-    // REATIVAR BOTÃO
-    // ========================================
-
     btnSalvar.disabled = false;
-
     btnSalvar.textContent =
       "Criar proposta";
 
 
-    // ========================================
-    // TRATAR ERRO
-    // ========================================
-
     if (error) {
-
       console.error(
         "Erro ao criar proposta:",
         error
       );
-
 
       if (
         error.code === "42501" ||
@@ -444,15 +395,16 @@ btnSalvar.addEventListener(
             "row-level security"
           )
       ) {
-
         alert(
-          "Você não tem permissão para criar esta proposta.\n\n" +
-          "Se você estiver no plano FREE, verifique se já atingiu o limite de 3 propostas."
+          "Você atingiu o limite de 3 propostas do plano FREE.\n\n" +
+          "Assine o PRO para criar propostas ilimitadas."
         );
+
+        window.location.href =
+          "planos.html";
 
         return;
       }
-
 
       alert(
         "Erro ao criar proposta."
@@ -461,10 +413,6 @@ btnSalvar.addEventListener(
       return;
     }
 
-
-    // ========================================
-    // LIMPAR FORMULÁRIO
-    // ========================================
 
     clienteSelect.value =
       "";
@@ -490,10 +438,6 @@ btnSalvar.addEventListener(
     );
 
 
-    // ========================================
-    // ATUALIZAR LISTA
-    // ========================================
-
     await carregarPropostas();
 
   }
@@ -505,13 +449,11 @@ btnSalvar.addEventListener(
 // ==========================================
 
 async function carregarPropostas() {
-
   listaPropostas.innerHTML = `
     <p class="vazio">
       Carregando...
     </p>
   `;
-
 
   const {
     data,
@@ -523,11 +465,15 @@ async function carregarPropostas() {
       .eq(
         "user_id",
         usuarioAtual.id
+      )
+      .order(
+        "created_at",
+        {
+          ascending: false
+        }
       );
 
-
   if (error) {
-
     console.error(
       "Erro ao carregar propostas:",
       error
@@ -542,16 +488,10 @@ async function carregarPropostas() {
     return;
   }
 
-
-  // ==========================================
-  // NENHUMA PROPOSTA
-  // ==========================================
-
   if (
     !data ||
     data.length === 0
   ) {
-
     listaPropostas.innerHTML = `
       <p class="vazio">
         Você ainda não possui propostas.
@@ -561,14 +501,10 @@ async function carregarPropostas() {
     return;
   }
 
+  await garantirTokens(data);
 
   listaPropostas.innerHTML =
     "";
-
-
-  // ==========================================
-  // MOSTRAR PROPOSTAS
-  // ==========================================
 
   data.forEach(proposta => {
 
@@ -584,14 +520,19 @@ async function carregarPropostas() {
     const valorFormatado =
       Number(
         proposta.value || 0
-      )
-        .toLocaleString(
-          "pt-BR",
-          {
-            style: "currency",
-            currency: "BRL"
-          }
-        );
+      ).toLocaleString(
+        "pt-BR",
+        {
+          style: "currency",
+          currency: "BRL"
+        }
+      );
+
+
+    const status =
+      normalizarStatus(
+        proposta.status
+      );
 
 
     card.innerHTML = `
@@ -606,16 +547,14 @@ async function carregarPropostas() {
         </h3>
 
         <p>
-          👤
-          ${escapar(
+          👤 ${escapar(
             proposta.client_name ||
             "-"
           )}
         </p>
 
         <p>
-          📞
-          ${escapar(
+          📞 ${escapar(
             proposta.client_phone ||
             "-"
           )}
@@ -633,10 +572,34 @@ async function carregarPropostas() {
           )}
         </p>
 
+        <p>
+          Status:
+          <strong>
+            ${statusLabel(status)}
+          </strong>
+        </p>
+
       </div>
 
 
       <div class="proposta-acoes">
+
+        <a
+          class="btn btn-primary"
+          href="proposta.html?token=${encodeURIComponent(
+            proposta.token || ""
+          )}"
+          target="_blank"
+        >
+          Abrir
+        </a>
+
+        <button
+          class="btn btn-primary"
+          onclick="copiarLink('${proposta.token || ""}')"
+        >
+          Copiar link
+        </button>
 
         <button
           class="btn btn-danger"
@@ -649,12 +612,98 @@ async function carregarPropostas() {
 
     `;
 
-
     listaPropostas.appendChild(
       card
     );
-
   });
+}
+
+
+// ==========================================
+// GARANTIR TOKEN EM PROPOSTAS ANTIGAS
+// ==========================================
+
+async function garantirTokens(propostas) {
+  for (
+    const proposta
+    of propostas
+  ) {
+
+    if (proposta.token) {
+      continue;
+    }
+
+    const novoToken =
+      gerarToken();
+
+    const {
+      error
+    } =
+      await supabaseClient
+        .from("proposals")
+        .update({
+          token: novoToken
+        })
+        .eq(
+          "id",
+          proposta.id
+        )
+        .eq(
+          "user_id",
+          usuarioAtual.id
+        );
+
+    if (error) {
+      console.error(
+        "Erro ao criar token:",
+        proposta.id,
+        error
+      );
+
+      continue;
+    }
+
+    proposta.token =
+      novoToken;
+  }
+}
+
+
+// ==========================================
+// COPIAR LINK
+// ==========================================
+
+async function copiarLink(token) {
+  if (!token) {
+    alert(
+      "Essa proposta ainda não possui link."
+    );
+
+    return;
+  }
+
+  const link =
+    `${window.location.origin}/proposta.html?token=${encodeURIComponent(token)}`;
+
+  try {
+    await navigator.clipboard
+      .writeText(link);
+
+    alert(
+      "Link da proposta copiado!"
+    );
+
+  } catch (error) {
+    console.error(
+      "Erro ao copiar:",
+      error
+    );
+
+    prompt(
+      "Copie o link:",
+      link
+    );
+  }
 }
 
 
@@ -663,19 +712,14 @@ async function carregarPropostas() {
 // ==========================================
 
 async function excluirProposta(id) {
-
   const confirmar =
     confirm(
       "Deseja excluir esta proposta?"
     );
 
-
   if (!confirmar) {
-
     return;
-
   }
-
 
   const {
     error
@@ -692,9 +736,7 @@ async function excluirProposta(id) {
         usuarioAtual.id
       );
 
-
   if (error) {
-
     console.error(
       "Erro ao excluir proposta:",
       error
@@ -707,21 +749,59 @@ async function excluirProposta(id) {
     return;
   }
 
-
   await carregarPropostas();
 }
 
 
-window.excluirProposta =
-  excluirProposta;
+// ==========================================
+// STATUS
+// ==========================================
+
+function normalizarStatus(status) {
+  const valor =
+    String(
+      status || "pending"
+    )
+      .trim()
+      .toLowerCase();
+
+  if (
+    valor === "accepted" ||
+    valor === "aceita" ||
+    valor === "aceito"
+  ) {
+    return "accepted";
+  }
+
+  if (
+    valor === "rejected" ||
+    valor === "recusada"
+  ) {
+    return "rejected";
+  }
+
+  return "pending";
+}
+
+
+function statusLabel(status) {
+  if (status === "accepted") {
+    return "Aceita";
+  }
+
+  if (status === "rejected") {
+    return "Recusada";
+  }
+
+  return "Aguardando";
+}
 
 
 // ==========================================
-// PROTEÇÃO CONTRA HTML INJETADO
+// PROTEÇÃO HTML
 // ==========================================
 
 function escapar(valor) {
-
   return String(valor)
 
     .replaceAll(
@@ -752,7 +832,18 @@ function escapar(valor) {
 
 
 // ==========================================
-// INICIAR PÁGINA
+// FUNÇÕES GLOBAIS
+// ==========================================
+
+window.excluirProposta =
+  excluirProposta;
+
+window.copiarLink =
+  copiarLink;
+
+
+// ==========================================
+// INICIAR
 // ==========================================
 
 iniciar();
