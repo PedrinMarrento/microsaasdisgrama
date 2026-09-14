@@ -1,849 +1,374 @@
-// ==========================================
-// CONFIGURAÇÃO SUPABASE
-// ==========================================
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-const SUPABASE_URL =
-  "https://pdmpyietjlwqfqxdcztd.supabase.co";
+  <title>Propostas | PropostaFlow</title>
 
-const SUPABASE_KEY =
-  "sb_publishable_qhcsSm4VcaZcIP_d5JBYRQ_5jmCo0WT";
-
-const supabaseClient =
-  window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_KEY
-  );
-
-
-// ==========================================
-// VARIÁVEIS
-// ==========================================
-
-let usuarioAtual = null;
-let clientes = [];
-
-
-// ==========================================
-// ELEMENTOS
-// ==========================================
-
-const clienteSelect =
-  document.getElementById("cliente");
-
-const tituloInput =
-  document.getElementById("titulo");
-
-const valorInput =
-  document.getElementById("valor");
-
-const prazoInput =
-  document.getElementById("prazo");
-
-const descricaoInput =
-  document.getElementById("descricao");
-
-const observacoesInput =
-  document.getElementById("observacoes");
-
-const btnSalvar =
-  document.getElementById("btnSalvar");
-
-const listaPropostas =
-  document.getElementById("listaPropostas");
-
-
-// ==========================================
-// INICIAR
-// ==========================================
-
-async function iniciar() {
-  try {
-    const {
-      data: { user },
-      error
-    } =
-      await supabaseClient.auth.getUser();
-
-    if (error || !user) {
-      window.location.href = "login.html";
-      return;
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
     }
 
-    usuarioAtual = user;
-
-    await carregarClientes();
-    await carregarPropostas();
-
-  } catch (error) {
-    console.error(
-      "Erro ao iniciar:",
-      error
-    );
-  }
-}
-
-
-// ==========================================
-// CARREGAR CLIENTES
-// ==========================================
-
-async function carregarClientes() {
-  const {
-    data,
-    error
-  } =
-    await supabaseClient
-      .from("clients")
-      .select("*")
-      .eq(
-        "user_id",
-        usuarioAtual.id
-      )
-      .order(
-        "created_at",
-        {
-          ascending: false
-        }
-      );
-
-  if (error) {
-    console.error(
-      "Erro ao carregar clientes:",
-      error
-    );
-
-    return;
-  }
-
-  clientes = data || [];
-
-  clienteSelect.innerHTML = `
-    <option value="">
-      Selecione um cliente
-    </option>
-  `;
-
-  clientes.forEach(cliente => {
-    const option =
-      document.createElement(
-        "option"
-      );
-
-    option.value =
-      cliente.id;
-
-    option.textContent =
-      cliente.name;
-
-    clienteSelect.appendChild(
-      option
-    );
-  });
-}
-
-
-// ==========================================
-// VERIFICAR LIMITE FREE / PRO
-// ==========================================
-
-async function podeCriarProposta() {
-  const {
-    data: profile,
-    error: profileError
-  } =
-    await supabaseClient
-      .from("profiles")
-      .select("plan")
-      .eq(
-        "id",
-        usuarioAtual.id
-      )
-      .single();
-
-  if (profileError) {
-    console.error(
-      "Erro ao verificar plano:",
-      profileError
-    );
-
-    alert(
-      "Não foi possível verificar seu plano."
-    );
-
-    return false;
-  }
-
-  const plano =
-    (
-      profile?.plan ||
-      "free"
-    ).toLowerCase();
-
-  if (plano === "pro") {
-    return true;
-  }
-
-  const {
-    count,
-    error: countError
-  } =
-    await supabaseClient
-      .from("proposals")
-      .select(
-        "*",
-        {
-          count: "exact",
-          head: true
-        }
-      )
-      .eq(
-        "user_id",
-        usuarioAtual.id
-      );
-
-  if (countError) {
-    console.error(
-      "Erro ao contar propostas:",
-      countError
-    );
-
-    alert(
-      "Erro ao verificar suas propostas."
-    );
-
-    return false;
-  }
-
-  if ((count || 0) >= 3) {
-    alert(
-      "Você atingiu o limite de 3 propostas do plano FREE.\n\n" +
-      "Assine o PRO para criar propostas ilimitadas."
-    );
-
-    window.location.href =
-      "planos.html";
-
-    return false;
-  }
-
-  return true;
-}
-
-
-// ==========================================
-// GERAR TOKEN
-// ==========================================
-
-function gerarToken() {
-  if (
-    window.crypto &&
-    window.crypto.randomUUID
-  ) {
-    return crypto.randomUUID();
-  }
-
-  return (
-    Date.now().toString(36) +
-    Math.random()
-      .toString(36)
-      .substring(2, 15)
-  );
-}
-
-
-// ==========================================
-// CRIAR PROPOSTA
-// ==========================================
-
-btnSalvar.addEventListener(
-  "click",
-  async () => {
-
-    const clientId =
-      clienteSelect.value;
-
-    const titulo =
-      tituloInput.value.trim();
-
-    const valor =
-      Number(
-        valorInput.value
-      );
-
-    const prazo =
-      prazoInput.value.trim();
-
-    const descricao =
-      descricaoInput.value.trim();
-
-    const observacoes =
-      observacoesInput.value.trim();
-
-
-    if (!clientId) {
-      alert(
-        "Selecione um cliente."
-      );
-      return;
+    body {
+      background: #07111f;
+      color: white;
+      min-height: 100vh;
     }
 
-    if (!titulo) {
-      alert(
-        "Informe o título da proposta."
-      );
-      return;
+    .layout {
+      display: flex;
+      min-height: 100vh;
     }
 
-    if (
-      !valor ||
-      valor <= 0
-    ) {
-      alert(
-        "Informe um valor válido."
-      );
-      return;
+    .sidebar {
+      width: 250px;
+      background: #0d1b2e;
+      border-right: 1px solid #24344a;
+      padding: 30px 20px;
     }
 
-    const cliente =
-      clientes.find(
-        item =>
-          item.id === clientId
-      );
-
-    if (!cliente) {
-      alert(
-        "Cliente não encontrado."
-      );
-      return;
+    .logo {
+      font-size: 24px;
+      font-weight: 800;
+      margin-bottom: 40px;
     }
 
-
-    const permitido =
-      await podeCriarProposta();
-
-    if (!permitido) {
-      return;
+    .logo span {
+      color: #7257ff;
     }
 
+    .menu {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
 
-    btnSalvar.disabled = true;
-    btnSalvar.textContent =
-      "Criando...";
+    .menu a {
+      color: #d5dbea;
+      text-decoration: none;
+      padding: 13px 15px;
+      border-radius: 10px;
+    }
 
+    .menu a:hover,
+    .menu a.ativo {
+      background: #182a43;
+      color: white;
+    }
 
-    const token =
-      gerarToken();
+    .conteudo {
+      flex: 1;
+      padding: 35px;
+    }
 
+    .topo {
+      margin-bottom: 30px;
+    }
 
-    const {
-      error
-    } =
-      await supabaseClient
-        .from("proposals")
-        .insert({
-          user_id:
-            usuarioAtual.id,
+    .topo h1 {
+      font-size: 30px;
+      margin-bottom: 6px;
+    }
 
-          client_id:
-            cliente.id,
+    .topo p {
+      color: #8f9db1;
+    }
 
-          client_name:
-            cliente.name,
+    .card {
+      background: #0e1b2d;
+      border: 1px solid #22334a;
+      border-radius: 15px;
+      padding: 24px;
+      margin-bottom: 30px;
+    }
 
-          client_phone:
-            cliente.phone || null,
+    .card h2 {
+      margin-bottom: 20px;
+    }
 
-          title:
-            titulo,
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+    }
 
-          value:
-            valor,
+    .campo {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
 
-          deadline:
-            prazo,
+    .campo label {
+      color: #9aa9bd;
+      font-size: 13px;
+    }
 
-          description:
-            descricao,
+    input,
+    select,
+    textarea {
+      background: #091524;
+      color: white;
+      border: 1px solid #263850;
+      border-radius: 9px;
+      padding: 12px;
+      outline: none;
+    }
 
-          notes:
-            observacoes,
+    textarea {
+      resize: vertical;
+      min-height: 110px;
+    }
 
-          token:
-            token,
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: #7257ff;
+    }
 
-          status:
-            "pending"
-        });
+    .campo-grande {
+      margin-top: 16px;
+    }
 
+    .btn {
+      border: none;
+      border-radius: 9px;
+      padding: 12px 18px;
+      cursor: pointer;
+      font-weight: 700;
+      text-decoration: none;
+      display: inline-block;
+    }
 
-    btnSalvar.disabled = false;
-    btnSalvar.textContent =
-      "Criar proposta";
+    .btn-primary {
+      background: linear-gradient(135deg, #4268ff, #7b4dff);
+      color: white;
+    }
 
+    .btn-danger {
+      background: #3a1620;
+      color: #ff9daf;
+    }
 
-    if (error) {
-      console.error(
-        "Erro ao criar proposta:",
-        error
-      );
+    .acoes-form {
+      margin-top: 20px;
+    }
 
-      if (
-        error.code === "42501" ||
-        error.message
-          ?.toLowerCase()
-          .includes(
-            "row-level security"
-          )
-      ) {
-        alert(
-          "Você atingiu o limite de 3 propostas do plano FREE.\n\n" +
-          "Assine o PRO para criar propostas ilimitadas."
-        );
+    .lista {
+      display: grid;
+      gap: 15px;
+      margin-top: 18px;
+    }
 
-        window.location.href =
-          "planos.html";
+    .proposta {
+      background: #0e1b2d;
+      border: 1px solid #22334a;
+      border-radius: 14px;
+      padding: 22px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+    }
 
-        return;
+    .proposta-info h3 {
+      font-size: 20px;
+      margin-bottom: 8px;
+    }
+
+    .proposta-info p {
+      color: #8f9db1;
+      margin-top: 5px;
+    }
+
+    .valor {
+      color: #8e77ff !important;
+      font-weight: 800;
+      font-size: 18px;
+    }
+
+    .proposta-acoes {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .vazio {
+      color: #8f9db1;
+      padding: 20px 0;
+    }
+
+    @media(max-width: 750px) {
+      .sidebar {
+        display: none;
       }
 
-      alert(
-        "Erro ao criar proposta."
-      );
+      .conteudo {
+        padding: 20px;
+      }
 
-      return;
+      .proposta {
+        flex-direction: column;
+        align-items: flex-start;
+      }
     }
+  </style>
+</head>
 
+<body>
 
-    clienteSelect.value =
-      "";
+<div class="layout">
 
-    tituloInput.value =
-      "";
+  <aside class="sidebar">
 
-    valorInput.value =
-      "";
+    <div class="logo">
+      Proposta<span>Flow</span>
+    </div>
 
-    prazoInput.value =
-      "";
+    <nav class="menu">
 
-    descricaoInput.value =
-      "";
+      <a href="painel.html">
+        🏠 Início
+      </a>
 
-    observacoesInput.value =
-      "";
+      <a href="clientes.html">
+        👥 Clientes
+      </a>
 
+      <a href="propostas.html" class="ativo">
+        📄 Propostas
+      </a>
 
-    alert(
-      "Proposta criada com sucesso!"
-    );
+      <a href="planos.html">
+        ⭐ Planos
+      </a>
 
+    </nav>
 
-    await carregarPropostas();
+  </aside>
 
-  }
-);
+  <main class="conteudo">
 
+    <div class="topo">
+      <h1>Propostas</h1>
 
-// ==========================================
-// CARREGAR PROPOSTAS
-// ==========================================
-
-async function carregarPropostas() {
-  listaPropostas.innerHTML = `
-    <p class="vazio">
-      Carregando...
-    </p>
-  `;
-
-  const {
-    data,
-    error
-  } =
-    await supabaseClient
-      .from("proposals")
-      .select("*")
-      .eq(
-        "user_id",
-        usuarioAtual.id
-      )
-      .order(
-        "created_at",
-        {
-          ascending: false
-        }
-      );
-
-  if (error) {
-    console.error(
-      "Erro ao carregar propostas:",
-      error
-    );
-
-    listaPropostas.innerHTML = `
-      <p class="vazio">
-        Erro ao carregar propostas.
+      <p>
+        Crie e gerencie suas propostas comerciais.
       </p>
-    `;
+    </div>
 
-    return;
-  }
+    <section class="card">
 
-  if (
-    !data ||
-    data.length === 0
-  ) {
-    listaPropostas.innerHTML = `
-      <p class="vazio">
-        Você ainda não possui propostas.
-      </p>
-    `;
+      <h2>Nova proposta</h2>
 
-    return;
-  }
+      <div class="form-grid">
 
-  await garantirTokens(data);
+        <div class="campo">
+          <label>Cliente</label>
 
-  listaPropostas.innerHTML =
-    "";
+          <select id="cliente">
+            <option value="">
+              Selecione um cliente
+            </option>
+          </select>
+        </div>
 
-  data.forEach(proposta => {
+        <div class="campo">
+          <label>Título</label>
 
-    const card =
-      document.createElement(
-        "div"
-      );
+          <input
+            id="titulo"
+            type="text"
+            placeholder="Ex: Desenvolvimento de site"
+          >
+        </div>
 
-    card.className =
-      "proposta";
+        <div class="campo">
+          <label>Valor</label>
 
+          <input
+            id="valor"
+            type="number"
+            step="0.01"
+            placeholder="Ex: 1500"
+          >
+        </div>
 
-    const valorFormatado =
-      Number(
-        proposta.value || 0
-      ).toLocaleString(
-        "pt-BR",
-        {
-          style: "currency",
-          currency: "BRL"
-        }
-      );
+        <div class="campo">
+          <label>Prazo</label>
 
-
-    const status =
-      normalizarStatus(
-        proposta.status
-      );
-
-
-    card.innerHTML = `
-
-      <div class="proposta-info">
-
-        <h3>
-          ${escapar(
-            proposta.title ||
-            "Sem título"
-          )}
-        </h3>
-
-        <p>
-          👤 ${escapar(
-            proposta.client_name ||
-            "-"
-          )}
-        </p>
-
-        <p>
-          📞 ${escapar(
-            proposta.client_phone ||
-            "-"
-          )}
-        </p>
-
-        <p class="valor">
-          ${valorFormatado}
-        </p>
-
-        <p>
-          ⏱️ Prazo:
-          ${escapar(
-            proposta.deadline ||
-            "-"
-          )}
-        </p>
-
-        <p>
-          Status:
-          <strong>
-            ${statusLabel(status)}
-          </strong>
-        </p>
+          <input
+            id="prazo"
+            type="text"
+            placeholder="Ex: 15 dias"
+          >
+        </div>
 
       </div>
 
+      <div class="campo campo-grande">
 
-      <div class="proposta-acoes">
+        <label>Descrição</label>
 
-        <a
-          class="btn btn-primary"
-          href="proposta.html?token=${encodeURIComponent(
-            proposta.token || ""
-          )}"
-          target="_blank"
-        >
-          Abrir
-        </a>
+        <textarea
+          id="descricao"
+          placeholder="Descreva o serviço..."
+        ></textarea>
+
+      </div>
+
+      <div class="campo campo-grande">
+
+        <label>Observações</label>
+
+        <textarea
+          id="observacoes"
+          placeholder="Observações adicionais..."
+        ></textarea>
+
+      </div>
+
+      <div class="acoes-form">
 
         <button
+          id="btnSalvar"
           class="btn btn-primary"
-          onclick="copiarLink('${proposta.token || ""}')"
         >
-          Copiar link
-        </button>
-
-        <button
-          class="btn btn-danger"
-          onclick="excluirProposta('${proposta.id}')"
-        >
-          Excluir
+          Criar proposta
         </button>
 
       </div>
 
-    `;
+    </section>
 
-    listaPropostas.appendChild(
-      card
-    );
-  });
-}
+    <section>
 
+      <h2>Suas propostas</h2>
 
-// ==========================================
-// GARANTIR TOKEN EM PROPOSTAS ANTIGAS
-// ==========================================
+      <div
+        id="listaPropostas"
+        class="lista"
+      >
+        <p class="vazio">
+          Carregando...
+        </p>
+      </div>
 
-async function garantirTokens(propostas) {
-  for (
-    const proposta
-    of propostas
-  ) {
+    </section>
 
-    if (proposta.token) {
-      continue;
-    }
+  </main>
 
-    const novoToken =
-      gerarToken();
+</div>
 
-    const {
-      error
-    } =
-      await supabaseClient
-        .from("proposals")
-        .update({
-          token: novoToken
-        })
-        .eq(
-          "id",
-          proposta.id
-        )
-        .eq(
-          "user_id",
-          usuarioAtual.id
-        );
+<!-- SUPABASE -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-    if (error) {
-      console.error(
-        "Erro ao criar token:",
-        proposta.id,
-        error
-      );
+<!-- JAVASCRIPT DA PÁGINA -->
+<script src="js/propostas.js"></script>
 
-      continue;
-    }
-
-    proposta.token =
-      novoToken;
-  }
-}
-
-
-// ==========================================
-// COPIAR LINK
-// ==========================================
-
-async function copiarLink(token) {
-  if (!token) {
-    alert(
-      "Essa proposta ainda não possui link."
-    );
-
-    return;
-  }
-
-  const link =
-    `${window.location.origin}/proposta.html?token=${encodeURIComponent(token)}`;
-
-  try {
-    await navigator.clipboard
-      .writeText(link);
-
-    alert(
-      "Link da proposta copiado!"
-    );
-
-  } catch (error) {
-    console.error(
-      "Erro ao copiar:",
-      error
-    );
-
-    prompt(
-      "Copie o link:",
-      link
-    );
-  }
-}
-
-
-// ==========================================
-// EXCLUIR PROPOSTA
-// ==========================================
-
-async function excluirProposta(id) {
-  const confirmar =
-    confirm(
-      "Deseja excluir esta proposta?"
-    );
-
-  if (!confirmar) {
-    return;
-  }
-
-  const {
-    error
-  } =
-    await supabaseClient
-      .from("proposals")
-      .delete()
-      .eq(
-        "id",
-        id
-      )
-      .eq(
-        "user_id",
-        usuarioAtual.id
-      );
-
-  if (error) {
-    console.error(
-      "Erro ao excluir proposta:",
-      error
-    );
-
-    alert(
-      "Erro ao excluir proposta."
-    );
-
-    return;
-  }
-
-  await carregarPropostas();
-}
-
-
-// ==========================================
-// STATUS
-// ==========================================
-
-function normalizarStatus(status) {
-  const valor =
-    String(
-      status || "pending"
-    )
-      .trim()
-      .toLowerCase();
-
-  if (
-    valor === "accepted" ||
-    valor === "aceita" ||
-    valor === "aceito"
-  ) {
-    return "accepted";
-  }
-
-  if (
-    valor === "rejected" ||
-    valor === "recusada"
-  ) {
-    return "rejected";
-  }
-
-  return "pending";
-}
-
-
-function statusLabel(status) {
-  if (status === "accepted") {
-    return "Aceita";
-  }
-
-  if (status === "rejected") {
-    return "Recusada";
-  }
-
-  return "Aguardando";
-}
-
-
-// ==========================================
-// PROTEÇÃO HTML
-// ==========================================
-
-function escapar(valor) {
-  return String(valor)
-
-    .replaceAll(
-      "&",
-      "&amp;"
-    )
-
-    .replaceAll(
-      "<",
-      "&lt;"
-    )
-
-    .replaceAll(
-      ">",
-      "&gt;"
-    )
-
-    .replaceAll(
-      '"',
-      "&quot;"
-    )
-
-    .replaceAll(
-      "'",
-      "&#039;"
-    );
-}
-
-
-// ==========================================
-// FUNÇÕES GLOBAIS
-// ==========================================
-
-window.excluirProposta =
-  excluirProposta;
-
-window.copiarLink =
-  copiarLink;
-
-
-// ==========================================
-// INICIAR
-// ==========================================
-
-iniciar();
+</body>
+</html>
