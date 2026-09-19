@@ -1,12 +1,24 @@
 module.exports = async function handler(req, res) {
+
+  // ==========================================
+  // PERMITIR APENAS GET
+  // ==========================================
+
   if (req.method !== "GET") {
     return res.status(405).json({
       error: "Método não permitido"
     });
   }
 
+
   try {
+
+    // ==========================================
+    // PEGAR TOKEN
+    // ==========================================
+
     const { token } = req.query;
+
 
     if (!token) {
       return res.status(400).json({
@@ -14,44 +26,187 @@ module.exports = async function handler(req, res) {
       });
     }
 
+
+    // ==========================================
+    // BUSCAR PROPOSTA
+    // ==========================================
+
     const response = await fetch(
-      `${process.env.SUPABASE_URL}/rest/v1/proposals?token=eq.${encodeURIComponent(token)}&select=id,client_name,title,value,deadline,description,status,accepted_at`,
+      `${process.env.SUPABASE_URL}/rest/v1/proposals?token=eq.${encodeURIComponent(token)}&select=id,user_id,client_name,client_phone,title,value,deadline,description,notes,status,accepted_at`,
       {
+        method: "GET",
+
         headers: {
+
           apikey:
             process.env.SUPABASE_SERVICE_ROLE_KEY,
 
           Authorization:
             `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`
+
         }
       }
     );
 
-    const data = await response.json();
+
+    const propostas =
+      await response.json();
+
 
     if (!response.ok) {
-      console.error(data);
+
+      console.error(
+        "Erro ao buscar proposta:",
+        propostas
+      );
+
 
       return res.status(500).json({
-        error: "Erro ao buscar proposta"
+        error:
+          "Erro ao buscar proposta"
       });
     }
 
-    if (!data.length) {
+
+    if (
+      !Array.isArray(propostas) ||
+      propostas.length === 0
+    ) {
+
       return res.status(404).json({
-        error: "Proposta não encontrada"
+        error:
+          "Proposta não encontrada"
       });
     }
 
-    return res.status(200).json(
-      data[0]
-    );
+
+    const proposta =
+      propostas[0];
+
+
+    // ==========================================
+    // BUSCAR EMPRESA / PERFIL
+    // ==========================================
+
+    const profileResponse =
+      await fetch(
+        `${process.env.SUPABASE_URL}/rest/v1/profiles?id=eq.${encodeURIComponent(proposta.user_id)}&select=business_name,document,phone,email,address,logo_url`,
+        {
+          method: "GET",
+
+          headers: {
+
+            apikey:
+              process.env.SUPABASE_SERVICE_ROLE_KEY,
+
+            Authorization:
+              `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`
+
+          }
+        }
+      );
+
+
+    const profiles =
+      await profileResponse.json();
+
+
+    if (!profileResponse.ok) {
+
+      console.error(
+        "Erro ao buscar perfil:",
+        profiles
+      );
+
+
+      return res.status(500).json({
+        error:
+          "Erro ao buscar dados da empresa"
+      });
+    }
+
+
+    const profile =
+      Array.isArray(profiles) &&
+      profiles.length > 0
+        ? profiles[0]
+        : {};
+
+
+    // ==========================================
+    // RESPOSTA PÚBLICA
+    // ==========================================
+
+    return res.status(200).json({
+
+      // PROPOSTA
+
+      id:
+        proposta.id,
+
+      client_name:
+        proposta.client_name,
+
+      client_phone:
+        proposta.client_phone,
+
+      title:
+        proposta.title,
+
+      value:
+        proposta.value,
+
+      deadline:
+        proposta.deadline,
+
+      description:
+        proposta.description,
+
+      notes:
+        proposta.notes,
+
+      status:
+        proposta.status,
+
+      accepted_at:
+        proposta.accepted_at,
+
+
+      // EMPRESA
+
+      business_name:
+        profile.business_name || "",
+
+      business_document:
+        profile.document || "",
+
+      business_phone:
+        profile.phone || "",
+
+      business_email:
+        profile.email || "",
+
+      business_address:
+        profile.address || "",
+
+      business_logo:
+        profile.logo_url || ""
+
+    });
+
 
   } catch (error) {
-    console.error(error);
+
+    console.error(
+      "Erro get-proposal:",
+      error
+    );
+
 
     return res.status(500).json({
-      error: "Erro interno"
+      error: "Erro interno",
+      details: error.message
     });
+
   }
 };
