@@ -1,12 +1,22 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>Propostas | PropostaFlow</title>
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>
+    Propostas | PropostaFlow
+  </title>
+
 
   <style>
+
     * {
       box-sizing: border-box;
       margin: 0;
@@ -14,16 +24,23 @@
       font-family: Arial, sans-serif;
     }
 
+
     body {
       background: #07111f;
       color: white;
       min-height: 100vh;
     }
 
+
     .layout {
       display: flex;
       min-height: 100vh;
     }
+
+
+    /* =========================
+       MENU LATERAL
+    ========================= */
 
     .sidebar {
       width: 250px;
@@ -32,15 +49,18 @@
       padding: 30px 20px;
     }
 
+
     .logo {
       font-size: 24px;
       font-weight: 800;
       margin-bottom: 40px;
     }
 
+
     .logo span {
       color: #7257ff;
     }
+
 
     .menu {
       display: flex;
@@ -48,12 +68,15 @@
       gap: 10px;
     }
 
+
     .menu a {
       color: #d5dbea;
       text-decoration: none;
       padding: 13px 15px;
       border-radius: 10px;
+      transition: 0.2s;
     }
+
 
     .menu a:hover,
     .menu a.ativo {
@@ -61,23 +84,36 @@
       color: white;
     }
 
+
+    /* =========================
+       CONTEÚDO
+    ========================= */
+
     .conteudo {
       flex: 1;
       padding: 35px;
     }
 
+
     .topo {
       margin-bottom: 30px;
     }
+
 
     .topo h1 {
       font-size: 30px;
       margin-bottom: 6px;
     }
 
+
     .topo p {
       color: #8f9db1;
     }
+
+
+    /* =========================
+       CARD NOVA PROPOSTA
+    ========================= */
 
     .card {
       background: #0e1b2d;
@@ -87,15 +123,24 @@
       margin-bottom: 30px;
     }
 
+
     .card h2 {
       margin-bottom: 20px;
     }
 
+
     .form-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+
+      grid-template-columns:
+        repeat(
+          auto-fit,
+          minmax(220px, 1fr)
+        );
+
       gap: 16px;
     }
+
 
     .campo {
       display: flex;
@@ -103,26 +148,36 @@
       gap: 8px;
     }
 
+
     .campo label {
       color: #9aa9bd;
       font-size: 13px;
     }
 
+
     input,
     select,
     textarea {
+
       background: #091524;
       color: white;
-      border: 1px solid #263850;
+
+      border:
+        1px solid #263850;
+
       border-radius: 9px;
+
       padding: 12px;
+
       outline: none;
     }
+
 
     textarea {
       resize: vertical;
       min-height: 110px;
     }
+
 
     input:focus,
     select:focus,
@@ -130,165 +185,488 @@
       border-color: #7257ff;
     }
 
+
     .campo-grande {
       margin-top: 16px;
     }
 
+
+    /* =========================
+       BOTÕES
+    ========================= */
+
     .btn {
+
       border: none;
+
       border-radius: 9px;
-      padding: 12px 18px;
+
+      padding:
+        12px 18px;
+
       cursor: pointer;
+
       font-weight: 700;
+
       text-decoration: none;
+
       display: inline-block;
+
+      transition: 0.2s;
     }
 
+
+    .btn:hover {
+      transform:
+        translateY(-1px);
+    }
+
+
     .btn-primary {
-      background: linear-gradient(135deg, #4268ff, #7b4dff);
+
+      background:
+        linear-gradient(
+          135deg,
+          #4268ff,
+          #7b4dff
+        );
+
       color: white;
     }
 
+
     .btn-danger {
+
       background: #3a1620;
+
       color: #ff9daf;
+
+      border:
+        1px solid
+        rgba(
+          255,
+          75,
+          100,
+          0.2
+        );
     }
+
 
     .acoes-form {
       margin-top: 20px;
     }
 
+
+    /* =========================
+       LISTA DE PROPOSTAS
+    ========================= */
+
     .lista {
+
       display: grid;
+
       gap: 15px;
+
       margin-top: 18px;
     }
 
+
     .proposta {
+
       background: #0e1b2d;
-      border: 1px solid #22334a;
+
+      border:
+        1px solid #22334a;
+
       border-radius: 14px;
+
       padding: 22px;
+
       display: flex;
-      justify-content: space-between;
+
+      justify-content:
+        space-between;
+
       align-items: center;
+
       gap: 20px;
+
+      transition: 0.2s;
     }
 
+
+    .proposta:hover {
+
+      border-color:
+        #344c6b;
+
+      transform:
+        translateY(-1px);
+    }
+
+
     .proposta-info h3 {
+
       font-size: 20px;
+
       margin-bottom: 8px;
     }
 
+
     .proposta-info p {
+
       color: #8f9db1;
+
       margin-top: 5px;
     }
 
+
     .valor {
-      color: #8e77ff !important;
+
+      color:
+        #8e77ff !important;
+
       font-weight: 800;
+
       font-size: 18px;
     }
 
+
     .proposta-acoes {
+
       display: flex;
+
       gap: 10px;
+
       flex-wrap: wrap;
     }
 
+
     .vazio {
+
       color: #8f9db1;
+
       padding: 20px 0;
     }
 
-    @media(max-width: 750px) {
+
+    /* =========================
+       STATUS
+    ========================= */
+
+    .status-badge {
+
+      display: inline-block;
+
+      margin-top: 10px;
+
+      padding:
+        6px 11px;
+
+      border-radius: 20px;
+
+      font-size: 12px;
+
+      font-weight: 800;
+
+      letter-spacing: 0.2px;
+    }
+
+
+    /* AGUARDANDO */
+
+    .status-aguardando {
+
+      background:
+        rgba(
+          255,
+          184,
+          0,
+          0.15
+        );
+
+      color:
+        #ffbd3e;
+
+      border:
+        1px solid
+        rgba(
+          255,
+          184,
+          0,
+          0.25
+        );
+    }
+
+
+    /* ACEITA */
+
+    .status-aceita {
+
+      background:
+        rgba(
+          31,
+          201,
+          120,
+          0.15
+        );
+
+      color:
+        #55e6a5;
+
+      border:
+        1px solid
+        rgba(
+          31,
+          201,
+          120,
+          0.25
+        );
+    }
+
+
+    /* RECUSADA */
+
+    .status-recusada {
+
+      background:
+        rgba(
+          255,
+          75,
+          100,
+          0.15
+        );
+
+      color:
+        #ff7589;
+
+      border:
+        1px solid
+        rgba(
+          255,
+          75,
+          100,
+          0.25
+        );
+    }
+
+
+    /* RASCUNHO */
+
+    .status-rascunho {
+
+      background:
+        rgba(
+          140,
+          150,
+          170,
+          0.15
+        );
+
+      color:
+        #aeb9c9;
+
+      border:
+        1px solid
+        rgba(
+          140,
+          150,
+          170,
+          0.25
+        );
+    }
+
+
+    /* =========================
+       MOBILE
+    ========================= */
+
+    @media(
+      max-width: 750px
+    ) {
+
       .sidebar {
         display: none;
       }
+
 
       .conteudo {
         padding: 20px;
       }
 
+
       .proposta {
-        flex-direction: column;
-        align-items: flex-start;
+
+        flex-direction:
+          column;
+
+        align-items:
+          flex-start;
       }
+
+
+      .proposta-acoes {
+        width: 100%;
+      }
+
+
+      .proposta-acoes .btn {
+        flex: 1;
+        text-align: center;
+      }
+
     }
+
   </style>
+
 </head>
+
 
 <body>
 
+
 <div class="layout">
+
+
+  <!-- MENU -->
 
   <aside class="sidebar">
 
+
     <div class="logo">
+
       Proposta<span>Flow</span>
+
     </div>
+
 
     <nav class="menu">
 
+
       <a href="painel.html">
+
         🏠 Início
+
       </a>
+
 
       <a href="clientes.html">
+
         👥 Clientes
+
       </a>
 
-      <a href="propostas.html" class="ativo">
+
+      <a
+        href="propostas.html"
+        class="ativo"
+      >
+
         📄 Propostas
+
       </a>
+
 
       <a href="planos.html">
+
         ⭐ Planos
+
       </a>
+
 
     </nav>
 
+
   </aside>
+
+
+
+  <!-- CONTEÚDO -->
 
   <main class="conteudo">
 
+
     <div class="topo">
-      <h1>Propostas</h1>
+
+
+      <h1>
+        Propostas
+      </h1>
+
 
       <p>
         Crie e gerencie suas propostas comerciais.
       </p>
+
+
     </div>
+
+
+
+    <!-- NOVA PROPOSTA -->
 
     <section class="card">
 
-      <h2>Nova proposta</h2>
+
+      <h2>
+        Nova proposta
+      </h2>
+
 
       <div class="form-grid">
 
+
         <div class="campo">
-          <label>Cliente</label>
+
+
+          <label>
+            Cliente
+          </label>
+
 
           <select id="cliente">
+
+
             <option value="">
+
               Selecione um cliente
+
             </option>
+
+
           </select>
+
+
         </div>
 
+
+
         <div class="campo">
-          <label>Título</label>
+
+
+          <label>
+            Título
+          </label>
+
 
           <input
             id="titulo"
             type="text"
             placeholder="Ex: Desenvolvimento de site"
           >
+
+
         </div>
 
+
+
         <div class="campo">
-          <label>Valor</label>
+
+
+          <label>
+            Valor
+          </label>
+
 
           <input
             id="valor"
@@ -296,79 +674,144 @@
             step="0.01"
             placeholder="Ex: 1500"
           >
+
+
         </div>
 
+
+
         <div class="campo">
-          <label>Prazo</label>
+
+
+          <label>
+            Prazo
+          </label>
+
 
           <input
             id="prazo"
             type="text"
             placeholder="Ex: 15 dias"
           >
+
+
         </div>
+
 
       </div>
 
-      <div class="campo campo-grande">
 
-        <label>Descrição</label>
+
+      <div
+        class="campo campo-grande"
+      >
+
+
+        <label>
+          Descrição
+        </label>
+
 
         <textarea
           id="descricao"
           placeholder="Descreva o serviço..."
         ></textarea>
 
+
       </div>
 
-      <div class="campo campo-grande">
 
-        <label>Observações</label>
+
+      <div
+        class="campo campo-grande"
+      >
+
+
+        <label>
+          Observações
+        </label>
+
 
         <textarea
           id="observacoes"
           placeholder="Observações adicionais..."
         ></textarea>
 
+
       </div>
 
+
+
       <div class="acoes-form">
+
 
         <button
           id="btnSalvar"
           class="btn btn-primary"
         >
+
           Criar proposta
+
         </button>
+
 
       </div>
 
+
     </section>
+
+
+
+    <!-- PROPOSTAS -->
 
     <section>
 
-      <h2>Suas propostas</h2>
+
+      <h2>
+        Suas propostas
+      </h2>
+
 
       <div
         id="listaPropostas"
         class="lista"
       >
+
+
         <p class="vazio">
+
           Carregando...
+
         </p>
+
+
       </div>
+
 
     </section>
 
+
   </main>
+
 
 </div>
 
-<!-- SUPABASE -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-<!-- JAVASCRIPT DA PÁGINA -->
-<script src="js/propostas.js"></script>
+
+<!-- SUPABASE -->
+
+<script
+  src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
+></script>
+
+
+<!-- JAVASCRIPT -->
+
+<script
+  src="js/propostas.js"
+></script>
+
 
 </body>
+
 </html>
