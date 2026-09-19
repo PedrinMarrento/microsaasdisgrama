@@ -53,28 +53,40 @@ const listaPropostas =
 
 async function iniciar() {
 
-  const {
-    data: { user },
-    error
-  } =
-    await supabaseClient.auth.getUser();
+  try {
 
-  if (error || !user) {
-    window.location.href =
-      "login.html";
+    const {
+      data: { user },
+      error
+    } =
+      await supabaseClient.auth.getUser();
 
-    return;
+    if (error || !user) {
+
+      window.location.href =
+        "login.html";
+
+      return;
+    }
+
+    usuarioAtual = user;
+
+    await carregarClientes();
+
+    await carregarPropostas();
+
+  } catch (error) {
+
+    console.error(
+      "Erro ao iniciar:",
+      error
+    );
   }
-
-  usuarioAtual = user;
-
-  await carregarClientes();
-  await carregarPropostas();
 }
 
 
 // ==========================================
-// CLIENTES
+// CARREGAR CLIENTES
 // ==========================================
 
 async function carregarClientes() {
@@ -97,6 +109,7 @@ async function carregarClientes() {
         }
       );
 
+
   if (error) {
 
     console.error(
@@ -107,13 +120,16 @@ async function carregarClientes() {
     return;
   }
 
+
   clientes = data || [];
+
 
   clienteSelect.innerHTML = `
     <option value="">
       Selecione um cliente
     </option>
   `;
+
 
   clientes.forEach(
     cliente => {
@@ -156,9 +172,13 @@ async function podeCriarProposta() {
       )
       .single();
 
+
   if (error) {
 
-    console.error(error);
+    console.error(
+      "Erro ao verificar plano:",
+      error
+    );
 
     alert(
       "Não foi possível verificar seu plano."
@@ -167,10 +187,12 @@ async function podeCriarProposta() {
     return false;
   }
 
+
   const plano =
     String(
       profile?.plan || "free"
     ).toLowerCase();
+
 
   if (plano === "pro") {
     return true;
@@ -198,7 +220,14 @@ async function podeCriarProposta() {
 
   if (countError) {
 
-    console.error(countError);
+    console.error(
+      "Erro ao contar propostas:",
+      countError
+    );
+
+    alert(
+      "Erro ao verificar suas propostas."
+    );
 
     return false;
   }
@@ -210,9 +239,6 @@ async function podeCriarProposta() {
       "Você atingiu o limite de 3 propostas do plano FREE.\n\n" +
       "Assine o PRO para criar propostas ilimitadas."
     );
-
-    window.location.href =
-      "planos.html";
 
     return false;
   }
@@ -236,11 +262,12 @@ function gerarToken() {
     return crypto.randomUUID();
   }
 
+
   return (
     Date.now().toString(36) +
     Math.random()
       .toString(36)
-      .substring(2)
+      .substring(2, 15)
   );
 }
 
@@ -256,23 +283,30 @@ btnSalvar.addEventListener(
     const clientId =
       clienteSelect.value;
 
+
     const titulo =
       tituloInput.value.trim();
+
 
     const valor =
       Number(
         valorInput.value
       );
 
+
     const prazo =
       prazoInput.value.trim();
+
 
     const descricao =
       descricaoInput.value.trim();
 
+
     const observacoes =
       observacoesInput.value.trim();
 
+
+    // CLIENTE
 
     if (!clientId) {
 
@@ -284,15 +318,19 @@ btnSalvar.addEventListener(
     }
 
 
+    // TÍTULO
+
     if (!titulo) {
 
       alert(
-        "Informe o título."
+        "Informe o título da proposta."
       );
 
       return;
     }
 
+
+    // VALOR
 
     if (
       !valor ||
@@ -324,6 +362,8 @@ btnSalvar.addEventListener(
     }
 
 
+    // LIMITE FREE
+
     const permitido =
       await podeCriarProposta();
 
@@ -333,7 +373,8 @@ btnSalvar.addEventListener(
     }
 
 
-    btnSalvar.disabled = true;
+    btnSalvar.disabled =
+      true;
 
     btnSalvar.textContent =
       "Criando...";
@@ -342,6 +383,8 @@ btnSalvar.addEventListener(
     const token =
       gerarToken();
 
+
+    // CRIAR
 
     const {
       error
@@ -385,15 +428,21 @@ btnSalvar.addEventListener(
         });
 
 
-    btnSalvar.disabled = false;
+    btnSalvar.disabled =
+      false;
 
     btnSalvar.textContent =
       "Criar proposta";
 
 
+    // ERRO
+
     if (error) {
 
-      console.error(error);
+      console.error(
+        "Erro ao criar proposta:",
+        error
+      );
 
 
       if (
@@ -422,19 +471,25 @@ btnSalvar.addEventListener(
     }
 
 
-    // LIMPAR CAMPOS
+    // LIMPAR FORMULÁRIO
 
-    clienteSelect.value = "";
+    clienteSelect.value =
+      "";
 
-    tituloInput.value = "";
+    tituloInput.value =
+      "";
 
-    valorInput.value = "";
+    valorInput.value =
+      "";
 
-    prazoInput.value = "";
+    prazoInput.value =
+      "";
 
-    descricaoInput.value = "";
+    descricaoInput.value =
+      "";
 
-    observacoesInput.value = "";
+    observacoesInput.value =
+      "";
 
 
     alert(
@@ -481,7 +536,11 @@ async function carregarPropostas() {
 
   if (error) {
 
-    console.error(error);
+    console.error(
+      "Erro ao carregar propostas:",
+      error
+    );
+
 
     listaPropostas.innerHTML = `
       <p class="vazio">
@@ -508,10 +567,13 @@ async function carregarPropostas() {
   }
 
 
+  // GARANTE TOKEN NAS ANTIGAS
+
   await garantirTokens(data);
 
 
-  listaPropostas.innerHTML = "";
+  listaPropostas.innerHTML =
+    "";
 
 
   data.forEach(
@@ -522,11 +584,14 @@ async function carregarPropostas() {
           "div"
         );
 
+
       card.className =
         "proposta";
 
 
-      const valor =
+      // VALOR
+
+      const valorFormatado =
         Number(
           proposta.value || 0
         ).toLocaleString(
@@ -537,6 +602,8 @@ async function carregarPropostas() {
           }
         );
 
+
+      // STATUS
 
       const status =
         normalizarStatus(
@@ -550,6 +617,14 @@ async function carregarPropostas() {
         );
 
 
+      // TOKEN
+
+      const token =
+        proposta.token || "";
+
+
+      // CARD
+
       card.innerHTML = `
 
         <div class="proposta-info">
@@ -561,6 +636,7 @@ async function carregarPropostas() {
             )}
           </h3>
 
+
           <p>
             👤
             ${escapar(
@@ -568,6 +644,7 @@ async function carregarPropostas() {
               "-"
             )}
           </p>
+
 
           <p>
             📞
@@ -577,9 +654,11 @@ async function carregarPropostas() {
             )}
           </p>
 
+
           <p class="valor">
-            ${valor}
+            ${valorFormatado}
           </p>
+
 
           <p>
             ⏱️ Prazo:
@@ -589,6 +668,7 @@ async function carregarPropostas() {
             )}
           </p>
 
+
           ${statusHTML}
 
         </div>
@@ -596,11 +676,10 @@ async function carregarPropostas() {
 
         <div class="proposta-acoes">
 
+
           <a
             class="btn btn-primary"
-            href="proposta.html?token=${encodeURIComponent(
-              proposta.token || ""
-            )}"
+            href="proposta.html?token=${encodeURIComponent(token)}"
             target="_blank"
           >
             Abrir
@@ -609,7 +688,7 @@ async function carregarPropostas() {
 
           <button
             class="btn btn-primary"
-            onclick="copiarLink('${proposta.token || ""}')"
+            onclick="copiarLink('${token}')"
           >
             Copiar link
           </button>
@@ -621,6 +700,7 @@ async function carregarPropostas() {
           >
             Excluir
           </button>
+
 
         </div>
       `;
@@ -635,7 +715,7 @@ async function carregarPropostas() {
 
 
 // ==========================================
-// STATUS
+// NORMALIZAR STATUS
 // ==========================================
 
 function normalizarStatus(status) {
@@ -652,6 +732,7 @@ function normalizarStatus(status) {
     valor === "aceita" ||
     valor === "accepted"
   ) {
+
     return "Aceita";
   }
 
@@ -660,6 +741,7 @@ function normalizarStatus(status) {
     valor === "recusada" ||
     valor === "rejected"
   ) {
+
     return "Recusada";
   }
 
@@ -667,6 +749,7 @@ function normalizarStatus(status) {
   if (
     valor === "rascunho"
   ) {
+
     return "Rascunho";
   }
 
@@ -676,19 +759,18 @@ function normalizarStatus(status) {
 
 
 // ==========================================
-// HTML DO STATUS
+// STATUS COLORIDO
 // ==========================================
 
 function criarStatusHTML(status) {
+
+  // ACEITA
 
   if (status === "Aceita") {
 
     return `
       <span
-        class="
-          status-badge
-          status-aceita
-        "
+        class="status-badge status-aceita"
       >
         ✓ Aceita
       </span>
@@ -696,14 +778,13 @@ function criarStatusHTML(status) {
   }
 
 
+  // RECUSADA
+
   if (status === "Recusada") {
 
     return `
       <span
-        class="
-          status-badge
-          status-recusada
-        "
+        class="status-badge status-recusada"
       >
         ✕ Recusada
       </span>
@@ -711,14 +792,13 @@ function criarStatusHTML(status) {
   }
 
 
+  // RASCUNHO
+
   if (status === "Rascunho") {
 
     return `
       <span
-        class="
-          status-badge
-          status-rascunho
-        "
+        class="status-badge status-rascunho"
       >
         Rascunho
       </span>
@@ -726,12 +806,11 @@ function criarStatusHTML(status) {
   }
 
 
+  // AGUARDANDO
+
   return `
     <span
-      class="
-        status-badge
-        status-aguardando
-      "
+      class="status-badge status-aguardando"
     >
       ⏳ Aguardando
     </span>
@@ -740,7 +819,7 @@ function criarStatusHTML(status) {
 
 
 // ==========================================
-// GARANTIR TOKEN
+// GARANTIR TOKEN NAS PROPOSTAS ANTIGAS
 // ==========================================
 
 async function garantirTokens(
@@ -767,7 +846,8 @@ async function garantirTokens(
       await supabaseClient
         .from("proposals")
         .update({
-          token: novoToken
+          token:
+            novoToken
         })
         .eq(
           "id",
@@ -782,7 +862,8 @@ async function garantirTokens(
     if (error) {
 
       console.error(
-        "Erro ao gerar token:",
+        "Erro ao criar token:",
+        proposta.id,
         error
       );
 
@@ -805,7 +886,7 @@ async function copiarLink(token) {
   if (!token) {
 
     alert(
-      "Esta proposta ainda não possui link."
+      "Essa proposta ainda não possui link."
     );
 
     return;
@@ -829,6 +910,12 @@ async function copiarLink(token) {
 
   } catch (error) {
 
+    console.error(
+      "Erro ao copiar link:",
+      error
+    );
+
+
     prompt(
       "Copie o link:",
       link
@@ -838,7 +925,7 @@ async function copiarLink(token) {
 
 
 // ==========================================
-// EXCLUIR
+// EXCLUIR PROPOSTA
 // ==========================================
 
 async function excluirProposta(id) {
@@ -872,7 +959,11 @@ async function excluirProposta(id) {
 
   if (error) {
 
-    console.error(error);
+    console.error(
+      "Erro ao excluir proposta:",
+      error
+    );
+
 
     alert(
       "Erro ao excluir proposta."
@@ -887,7 +978,44 @@ async function excluirProposta(id) {
 
 
 // ==========================================
-// GLOBAL
+// PROTEGER TEXTO NO HTML
+// ==========================================
+
+function escapar(valor) {
+
+  return String(
+    valor ?? ""
+  )
+
+    .replaceAll(
+      "&",
+      "&amp;"
+    )
+
+    .replaceAll(
+      "<",
+      "&lt;"
+    )
+
+    .replaceAll(
+      ">",
+      "&gt;"
+    )
+
+    .replaceAll(
+      '"',
+      "&quot;"
+    )
+
+    .replaceAll(
+      "'",
+      "&#039;"
+    );
+}
+
+
+// ==========================================
+// FUNÇÕES GLOBAIS
 // ==========================================
 
 window.copiarLink =
