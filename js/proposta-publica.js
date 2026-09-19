@@ -191,6 +191,7 @@ async function aceitarProposta() {
   botao.textContent =
     "Confirmando...";
 
+
   try {
 
     const response =
@@ -210,8 +211,10 @@ async function aceitarProposta() {
         }
       );
 
+
     const data =
       await response.json();
+
 
     if (!response.ok) {
 
@@ -229,20 +232,20 @@ async function aceitarProposta() {
       return;
     }
 
+
+    propostaAtual.status =
+      "Aceita";
+
+
     updateStatusVisual(
-      "accepted"
+      "Aceita"
     );
 
-    botao.textContent =
-      "✓ Proposta aceita";
-
-    document.getElementById(
-      "rejectProposal"
-    ).disabled = true;
 
     alert(
       "Proposta aceita com sucesso!"
     );
+
 
   } catch (error) {
 
@@ -260,7 +263,107 @@ async function aceitarProposta() {
 
 
 // ==========================================
-// STATUS
+// RECUSAR PROPOSTA
+// ==========================================
+
+async function recusarProposta() {
+
+  const confirmar =
+    confirm(
+      "Tem certeza que deseja recusar esta proposta?"
+    );
+
+  if (!confirmar) {
+    return;
+  }
+
+
+  const botao =
+    document.getElementById(
+      "rejectProposal"
+    );
+
+
+  botao.disabled = true;
+
+  botao.textContent =
+    "Recusando...";
+
+
+  try {
+
+    const response =
+      await fetch(
+        "/api/reject-proposal",
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json"
+          },
+
+          body: JSON.stringify({
+            token: token
+          })
+        }
+      );
+
+
+    const data =
+      await response.json();
+
+
+    if (!response.ok) {
+
+      console.error(data);
+
+      alert(
+        data.error ||
+        "Erro ao recusar proposta."
+      );
+
+      botao.disabled = false;
+
+      botao.textContent =
+        "✕ Recusar";
+
+      return;
+    }
+
+
+    propostaAtual.status =
+      "Recusada";
+
+
+    updateStatusVisual(
+      "Recusada"
+    );
+
+
+    alert(
+      "Proposta recusada."
+    );
+
+
+  } catch (error) {
+
+    console.error(error);
+
+    alert(
+      "Erro ao recusar proposta."
+    );
+
+    botao.disabled = false;
+
+    botao.textContent =
+      "✕ Recusar";
+  }
+}
+
+
+// ==========================================
+// STATUS VISUAL
 // ==========================================
 
 function updateStatusVisual(status) {
@@ -280,15 +383,19 @@ function updateStatusVisual(status) {
       "rejectProposal"
     );
 
+
   const statusNormalizado =
     String(
-      status || "pending"
-    ).toLowerCase();
+      status || "Aguardando"
+    )
+      .trim()
+      .toLowerCase();
 
 
+  // ACEITA
   if (
-    statusNormalizado === "accepted" ||
-    statusNormalizado === "aceita"
+    statusNormalizado === "aceita" ||
+    statusNormalizado === "accepted"
   ) {
 
     element.textContent =
@@ -304,13 +411,17 @@ function updateStatusVisual(status) {
 
     recusar.disabled = true;
 
+    recusar.textContent =
+      "✕ Recusar";
+
     return;
   }
 
 
+  // RECUSADA
   if (
-    statusNormalizado === "rejected" ||
-    statusNormalizado === "recusada"
+    statusNormalizado === "recusada" ||
+    statusNormalizado === "rejected"
   ) {
 
     element.textContent =
@@ -320,22 +431,40 @@ function updateStatusVisual(status) {
       "tag red";
 
     aceitar.disabled = true;
+
+    aceitar.textContent =
+      "✓ Aceitar proposta";
+
     recusar.disabled = true;
+
+    recusar.textContent =
+      "✕ Proposta recusada";
 
     return;
   }
 
 
+  // AGUARDANDO
   element.textContent =
     "Aguardando";
 
   element.className =
     "tag orange";
+
+  aceitar.disabled = false;
+
+  aceitar.textContent =
+    "✓ Aceitar proposta";
+
+  recusar.disabled = false;
+
+  recusar.textContent =
+    "✕ Recusar";
 }
 
 
 // ==========================================
-// BOTÕES
+// BOTÃO ACEITAR
 // ==========================================
 
 document
@@ -348,18 +477,17 @@ document
   );
 
 
-// Recusar deixaremos para o próximo passo
+// ==========================================
+// BOTÃO RECUSAR
+// ==========================================
+
 document
   .getElementById(
     "rejectProposal"
   )
   .addEventListener(
     "click",
-    () => {
-      alert(
-        "A função de recusar será configurada em seguida."
-      );
-    }
+    recusarProposta
   );
 
 
