@@ -1,5 +1,5 @@
 // ==========================================
-// CONFIGURAÇÃO SUPABASE
+// SUPABASE
 // ==========================================
 
 const SUPABASE_URL =
@@ -13,11 +13,6 @@ const supabaseClient =
     SUPABASE_URL,
     SUPABASE_KEY
   );
-
-
-// ==========================================
-// VARIÁVEIS
-// ==========================================
 
 let usuarioAtual = null;
 let clientes = [];
@@ -57,37 +52,33 @@ const listaPropostas =
 // ==========================================
 
 async function iniciar() {
-  try {
-    const {
-      data: { user },
-      error
-    } =
-      await supabaseClient.auth.getUser();
 
-    if (error || !user) {
-      window.location.href = "login.html";
-      return;
-    }
+  const {
+    data: { user },
+    error
+  } =
+    await supabaseClient.auth.getUser();
 
-    usuarioAtual = user;
+  if (error || !user) {
+    window.location.href =
+      "login.html";
 
-    await carregarClientes();
-    await carregarPropostas();
-
-  } catch (error) {
-    console.error(
-      "Erro ao iniciar:",
-      error
-    );
+    return;
   }
+
+  usuarioAtual = user;
+
+  await carregarClientes();
+  await carregarPropostas();
 }
 
 
 // ==========================================
-// CARREGAR CLIENTES
+// CLIENTES
 // ==========================================
 
 async function carregarClientes() {
+
   const {
     data,
     error
@@ -107,6 +98,7 @@ async function carregarClientes() {
       );
 
   if (error) {
+
     console.error(
       "Erro ao carregar clientes:",
       error
@@ -123,33 +115,37 @@ async function carregarClientes() {
     </option>
   `;
 
-  clientes.forEach(cliente => {
-    const option =
-      document.createElement(
-        "option"
+  clientes.forEach(
+    cliente => {
+
+      const option =
+        document.createElement(
+          "option"
+        );
+
+      option.value =
+        cliente.id;
+
+      option.textContent =
+        cliente.name;
+
+      clienteSelect.appendChild(
+        option
       );
-
-    option.value =
-      cliente.id;
-
-    option.textContent =
-      cliente.name;
-
-    clienteSelect.appendChild(
-      option
-    );
-  });
+    }
+  );
 }
 
 
 // ==========================================
-// VERIFICAR LIMITE FREE / PRO
+// VERIFICAR LIMITE FREE
 // ==========================================
 
 async function podeCriarProposta() {
+
   const {
     data: profile,
-    error: profileError
+    error
   } =
     await supabaseClient
       .from("profiles")
@@ -160,11 +156,9 @@ async function podeCriarProposta() {
       )
       .single();
 
-  if (profileError) {
-    console.error(
-      "Erro ao verificar plano:",
-      profileError
-    );
+  if (error) {
+
+    console.error(error);
 
     alert(
       "Não foi possível verificar seu plano."
@@ -174,14 +168,14 @@ async function podeCriarProposta() {
   }
 
   const plano =
-    (
-      profile?.plan ||
-      "free"
+    String(
+      profile?.plan || "free"
     ).toLowerCase();
 
   if (plano === "pro") {
     return true;
   }
+
 
   const {
     count,
@@ -201,20 +195,17 @@ async function podeCriarProposta() {
         usuarioAtual.id
       );
 
-  if (countError) {
-    console.error(
-      "Erro ao contar propostas:",
-      countError
-    );
 
-    alert(
-      "Erro ao verificar suas propostas."
-    );
+  if (countError) {
+
+    console.error(countError);
 
     return false;
   }
 
+
   if ((count || 0) >= 3) {
+
     alert(
       "Você atingiu o limite de 3 propostas do plano FREE.\n\n" +
       "Assine o PRO para criar propostas ilimitadas."
@@ -226,6 +217,7 @@ async function podeCriarProposta() {
     return false;
   }
 
+
   return true;
 }
 
@@ -235,10 +227,12 @@ async function podeCriarProposta() {
 // ==========================================
 
 function gerarToken() {
+
   if (
     window.crypto &&
     window.crypto.randomUUID
   ) {
+
     return crypto.randomUUID();
   }
 
@@ -246,7 +240,7 @@ function gerarToken() {
     Date.now().toString(36) +
     Math.random()
       .toString(36)
-      .substring(2, 15)
+      .substring(2)
   );
 }
 
@@ -281,28 +275,37 @@ btnSalvar.addEventListener(
 
 
     if (!clientId) {
+
       alert(
         "Selecione um cliente."
       );
+
       return;
     }
 
+
     if (!titulo) {
+
       alert(
-        "Informe o título da proposta."
+        "Informe o título."
       );
+
       return;
     }
+
 
     if (
       !valor ||
       valor <= 0
     ) {
+
       alert(
         "Informe um valor válido."
       );
+
       return;
     }
+
 
     const cliente =
       clientes.find(
@@ -310,10 +313,13 @@ btnSalvar.addEventListener(
           item.id === clientId
       );
 
+
     if (!cliente) {
+
       alert(
         "Cliente não encontrado."
       );
+
       return;
     }
 
@@ -321,12 +327,14 @@ btnSalvar.addEventListener(
     const permitido =
       await podeCriarProposta();
 
+
     if (!permitido) {
       return;
     }
 
 
     btnSalvar.disabled = true;
+
     btnSalvar.textContent =
       "Criando...";
 
@@ -341,6 +349,7 @@ btnSalvar.addEventListener(
       await supabaseClient
         .from("proposals")
         .insert({
+
           user_id:
             usuarioAtual.id,
 
@@ -372,20 +381,20 @@ btnSalvar.addEventListener(
             token,
 
           status:
-            "pending"
+            "Aguardando"
         });
 
 
     btnSalvar.disabled = false;
+
     btnSalvar.textContent =
       "Criar proposta";
 
 
     if (error) {
-      console.error(
-        "Erro ao criar proposta:",
-        error
-      );
+
+      console.error(error);
+
 
       if (
         error.code === "42501" ||
@@ -395,16 +404,15 @@ btnSalvar.addEventListener(
             "row-level security"
           )
       ) {
+
         alert(
           "Você atingiu o limite de 3 propostas do plano FREE.\n\n" +
           "Assine o PRO para criar propostas ilimitadas."
         );
 
-        window.location.href =
-          "planos.html";
-
         return;
       }
+
 
       alert(
         "Erro ao criar proposta."
@@ -414,23 +422,19 @@ btnSalvar.addEventListener(
     }
 
 
-    clienteSelect.value =
-      "";
+    // LIMPAR CAMPOS
 
-    tituloInput.value =
-      "";
+    clienteSelect.value = "";
 
-    valorInput.value =
-      "";
+    tituloInput.value = "";
 
-    prazoInput.value =
-      "";
+    valorInput.value = "";
 
-    descricaoInput.value =
-      "";
+    prazoInput.value = "";
 
-    observacoesInput.value =
-      "";
+    descricaoInput.value = "";
+
+    observacoesInput.value = "";
 
 
     alert(
@@ -439,7 +443,6 @@ btnSalvar.addEventListener(
 
 
     await carregarPropostas();
-
   }
 );
 
@@ -449,11 +452,13 @@ btnSalvar.addEventListener(
 // ==========================================
 
 async function carregarPropostas() {
+
   listaPropostas.innerHTML = `
     <p class="vazio">
       Carregando...
     </p>
   `;
+
 
   const {
     data,
@@ -473,11 +478,10 @@ async function carregarPropostas() {
         }
       );
 
+
   if (error) {
-    console.error(
-      "Erro ao carregar propostas:",
-      error
-    );
+
+    console.error(error);
 
     listaPropostas.innerHTML = `
       <p class="vazio">
@@ -488,10 +492,12 @@ async function carregarPropostas() {
     return;
   }
 
+
   if (
     !data ||
     data.length === 0
   ) {
+
     listaPropostas.innerHTML = `
       <p class="vazio">
         Você ainda não possui propostas.
@@ -501,129 +507,246 @@ async function carregarPropostas() {
     return;
   }
 
+
   await garantirTokens(data);
 
-  listaPropostas.innerHTML =
-    "";
 
-  data.forEach(proposta => {
+  listaPropostas.innerHTML = "";
 
-    const card =
-      document.createElement(
-        "div"
+
+  data.forEach(
+    proposta => {
+
+      const card =
+        document.createElement(
+          "div"
+        );
+
+      card.className =
+        "proposta";
+
+
+      const valor =
+        Number(
+          proposta.value || 0
+        ).toLocaleString(
+          "pt-BR",
+          {
+            style: "currency",
+            currency: "BRL"
+          }
+        );
+
+
+      const status =
+        normalizarStatus(
+          proposta.status
+        );
+
+
+      const statusHTML =
+        criarStatusHTML(
+          status
+        );
+
+
+      card.innerHTML = `
+
+        <div class="proposta-info">
+
+          <h3>
+            ${escapar(
+              proposta.title ||
+              "Sem título"
+            )}
+          </h3>
+
+          <p>
+            👤
+            ${escapar(
+              proposta.client_name ||
+              "-"
+            )}
+          </p>
+
+          <p>
+            📞
+            ${escapar(
+              proposta.client_phone ||
+              "-"
+            )}
+          </p>
+
+          <p class="valor">
+            ${valor}
+          </p>
+
+          <p>
+            ⏱️ Prazo:
+            ${escapar(
+              proposta.deadline ||
+              "-"
+            )}
+          </p>
+
+          ${statusHTML}
+
+        </div>
+
+
+        <div class="proposta-acoes">
+
+          <a
+            class="btn btn-primary"
+            href="proposta.html?token=${encodeURIComponent(
+              proposta.token || ""
+            )}"
+            target="_blank"
+          >
+            Abrir
+          </a>
+
+
+          <button
+            class="btn btn-primary"
+            onclick="copiarLink('${proposta.token || ""}')"
+          >
+            Copiar link
+          </button>
+
+
+          <button
+            class="btn btn-danger"
+            onclick="excluirProposta('${proposta.id}')"
+          >
+            Excluir
+          </button>
+
+        </div>
+      `;
+
+
+      listaPropostas.appendChild(
+        card
       );
-
-    card.className =
-      "proposta";
-
-
-    const valorFormatado =
-      Number(
-        proposta.value || 0
-      ).toLocaleString(
-        "pt-BR",
-        {
-          style: "currency",
-          currency: "BRL"
-        }
-      );
-
-
-    const status =
-      normalizarStatus(
-        proposta.status
-      );
-
-
-    card.innerHTML = `
-
-      <div class="proposta-info">
-
-        <h3>
-          ${escapar(
-            proposta.title ||
-            "Sem título"
-          )}
-        </h3>
-
-        <p>
-          👤 ${escapar(
-            proposta.client_name ||
-            "-"
-          )}
-        </p>
-
-        <p>
-          📞 ${escapar(
-            proposta.client_phone ||
-            "-"
-          )}
-        </p>
-
-        <p class="valor">
-          ${valorFormatado}
-        </p>
-
-        <p>
-          ⏱️ Prazo:
-          ${escapar(
-            proposta.deadline ||
-            "-"
-          )}
-        </p>
-
-        <p>
-          Status:
-          <strong>
-            ${statusLabel(status)}
-          </strong>
-        </p>
-
-      </div>
-
-
-      <div class="proposta-acoes">
-
-        <a
-          class="btn btn-primary"
-          href="proposta.html?token=${encodeURIComponent(
-            proposta.token || ""
-          )}"
-          target="_blank"
-        >
-          Abrir
-        </a>
-
-        <button
-          class="btn btn-primary"
-          onclick="copiarLink('${proposta.token || ""}')"
-        >
-          Copiar link
-        </button>
-
-        <button
-          class="btn btn-danger"
-          onclick="excluirProposta('${proposta.id}')"
-        >
-          Excluir
-        </button>
-
-      </div>
-
-    `;
-
-    listaPropostas.appendChild(
-      card
-    );
-  });
+    }
+  );
 }
 
 
 // ==========================================
-// GARANTIR TOKEN EM PROPOSTAS ANTIGAS
+// STATUS
 // ==========================================
 
-async function garantirTokens(propostas) {
+function normalizarStatus(status) {
+
+  const valor =
+    String(
+      status || "Aguardando"
+    )
+      .trim()
+      .toLowerCase();
+
+
+  if (
+    valor === "aceita" ||
+    valor === "accepted"
+  ) {
+    return "Aceita";
+  }
+
+
+  if (
+    valor === "recusada" ||
+    valor === "rejected"
+  ) {
+    return "Recusada";
+  }
+
+
+  if (
+    valor === "rascunho"
+  ) {
+    return "Rascunho";
+  }
+
+
+  return "Aguardando";
+}
+
+
+// ==========================================
+// HTML DO STATUS
+// ==========================================
+
+function criarStatusHTML(status) {
+
+  if (status === "Aceita") {
+
+    return `
+      <span
+        class="
+          status-badge
+          status-aceita
+        "
+      >
+        ✓ Aceita
+      </span>
+    `;
+  }
+
+
+  if (status === "Recusada") {
+
+    return `
+      <span
+        class="
+          status-badge
+          status-recusada
+        "
+      >
+        ✕ Recusada
+      </span>
+    `;
+  }
+
+
+  if (status === "Rascunho") {
+
+    return `
+      <span
+        class="
+          status-badge
+          status-rascunho
+        "
+      >
+        Rascunho
+      </span>
+    `;
+  }
+
+
+  return `
+    <span
+      class="
+        status-badge
+        status-aguardando
+      "
+    >
+      ⏳ Aguardando
+    </span>
+  `;
+}
+
+
+// ==========================================
+// GARANTIR TOKEN
+// ==========================================
+
+async function garantirTokens(
+  propostas
+) {
+
   for (
     const proposta
     of propostas
@@ -633,8 +756,10 @@ async function garantirTokens(propostas) {
       continue;
     }
 
+
     const novoToken =
       gerarToken();
+
 
     const {
       error
@@ -653,15 +778,17 @@ async function garantirTokens(propostas) {
           usuarioAtual.id
         );
 
+
     if (error) {
+
       console.error(
-        "Erro ao criar token:",
-        proposta.id,
+        "Erro ao gerar token:",
         error
       );
 
       continue;
     }
+
 
     proposta.token =
       novoToken;
@@ -674,30 +801,33 @@ async function garantirTokens(propostas) {
 // ==========================================
 
 async function copiarLink(token) {
+
   if (!token) {
+
     alert(
-      "Essa proposta ainda não possui link."
+      "Esta proposta ainda não possui link."
     );
 
     return;
   }
 
+
   const link =
     `${window.location.origin}/proposta.html?token=${encodeURIComponent(token)}`;
 
+
   try {
+
     await navigator.clipboard
       .writeText(link);
+
 
     alert(
       "Link da proposta copiado!"
     );
 
+
   } catch (error) {
-    console.error(
-      "Erro ao copiar:",
-      error
-    );
 
     prompt(
       "Copie o link:",
@@ -708,18 +838,21 @@ async function copiarLink(token) {
 
 
 // ==========================================
-// EXCLUIR PROPOSTA
+// EXCLUIR
 // ==========================================
 
 async function excluirProposta(id) {
+
   const confirmar =
     confirm(
-      "Deseja excluir esta proposta?"
+      "Deseja realmente excluir esta proposta?"
     );
+
 
   if (!confirmar) {
     return;
   }
+
 
   const {
     error
@@ -736,11 +869,10 @@ async function excluirProposta(id) {
         usuarioAtual.id
       );
 
+
   if (error) {
-    console.error(
-      "Erro ao excluir proposta:",
-      error
-    );
+
+    console.error(error);
 
     alert(
       "Erro ao excluir proposta."
@@ -749,97 +881,20 @@ async function excluirProposta(id) {
     return;
   }
 
+
   await carregarPropostas();
 }
 
 
 // ==========================================
-// STATUS
+// GLOBAL
 // ==========================================
-
-function normalizarStatus(status) {
-  const valor =
-    String(
-      status || "pending"
-    )
-      .trim()
-      .toLowerCase();
-
-  if (
-    valor === "accepted" ||
-    valor === "aceita" ||
-    valor === "aceito"
-  ) {
-    return "accepted";
-  }
-
-  if (
-    valor === "rejected" ||
-    valor === "recusada"
-  ) {
-    return "rejected";
-  }
-
-  return "pending";
-}
-
-
-function statusLabel(status) {
-  if (status === "accepted") {
-    return "Aceita";
-  }
-
-  if (status === "rejected") {
-    return "Recusada";
-  }
-
-  return "Aguardando";
-}
-
-
-// ==========================================
-// PROTEÇÃO HTML
-// ==========================================
-
-function escapar(valor) {
-  return String(valor)
-
-    .replaceAll(
-      "&",
-      "&amp;"
-    )
-
-    .replaceAll(
-      "<",
-      "&lt;"
-    )
-
-    .replaceAll(
-      ">",
-      "&gt;"
-    )
-
-    .replaceAll(
-      '"',
-      "&quot;"
-    )
-
-    .replaceAll(
-      "'",
-      "&#039;"
-    );
-}
-
-
-// ==========================================
-// FUNÇÕES GLOBAIS
-// ==========================================
-
-window.excluirProposta =
-  excluirProposta;
 
 window.copiarLink =
   copiarLink;
+
+window.excluirProposta =
+  excluirProposta;
 
 
 // ==========================================
