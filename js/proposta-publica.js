@@ -1,7 +1,75 @@
-const params = new URLSearchParams(window.location.search);
-const token = params.get("token");
+const params =
+  new URLSearchParams(
+    window.location.search
+  );
+
+const token =
+  params.get("token");
 
 let propostaAtual = null;
+
+
+// ==========================================
+// DATA
+// ==========================================
+
+function formatarData(data) {
+
+  if (!data) {
+    return new Date()
+      .toLocaleDateString(
+        "pt-BR"
+      );
+  }
+
+  const date =
+    new Date(data);
+
+  if (
+    Number.isNaN(
+      date.getTime()
+    )
+  ) {
+
+    return new Date()
+      .toLocaleDateString(
+        "pt-BR"
+      );
+  }
+
+  return date
+    .toLocaleDateString(
+      "pt-BR"
+    );
+}
+
+
+// ==========================================
+// NÚMERO DA PROPOSTA
+// ==========================================
+
+function gerarNumeroProposta(
+  proposal
+) {
+
+  const base =
+    proposal.id ||
+    token ||
+    "";
+
+  const numero =
+    String(base)
+      .replace(
+        /[^a-zA-Z0-9]/g,
+        ""
+      )
+      .substring(0, 8)
+      .toUpperCase();
+
+  return numero
+    ? "#" + numero
+    : "#PROPOSTA";
+}
 
 
 // ==========================================
@@ -11,20 +79,32 @@ let propostaAtual = null;
 async function loadProposal() {
 
   if (!token) {
-    alert("Link da proposta inválido.");
+
+    alert(
+      "Link da proposta inválido."
+    );
+
     return;
   }
 
+
   try {
 
-    const response = await fetch(
-      `/api/get-proposal?token=${encodeURIComponent(token)}`
-    );
+    const response =
+      await fetch(
+        `/api/get-proposal?token=${encodeURIComponent(token)}`
+      );
 
-    const proposal = await response.json();
+
+    const proposal =
+      await response.json();
+
 
     if (!response.ok) {
-      console.error(proposal);
+
+      console.error(
+        proposal
+      );
 
       alert(
         proposal.error ||
@@ -34,17 +114,20 @@ async function loadProposal() {
       return;
     }
 
-    propostaAtual = proposal;
+
+    propostaAtual =
+      proposal;
 
 
     // ======================================
-    // LOGO DA EMPRESA
+    // LOGO
     // ======================================
 
     const logoBox =
       document.getElementById(
         "businessLogoBox"
       );
+
 
     const logo =
       document.getElementById(
@@ -61,25 +144,23 @@ async function loadProposal() {
       logo.src =
         proposal.business_logo;
 
+
       logoBox.style.display =
         "flex";
 
 
-      // Se a imagem não carregar,
-      // simplesmente esconde o espaço.
+      logo.onerror =
+        () => {
 
-      logo.onerror = () => {
+          logoBox.style.display =
+            "none";
 
-        logoBox.style.display =
-          "none";
-
-      };
+        };
 
     } else if (logoBox) {
 
       logoBox.style.display =
         "none";
-
     }
 
 
@@ -115,13 +196,49 @@ async function loadProposal() {
     document.getElementById(
       "businessEmail"
     ).textContent =
-      proposal.business_email || "";
+      proposal.business_email ||
+      "";
 
 
     document.getElementById(
       "businessAddress"
     ).textContent =
-      proposal.business_address || "";
+      proposal.business_address ||
+      "";
+
+
+    // ======================================
+    // IDENTIFICAÇÃO DA PROPOSTA
+    // ======================================
+
+    const numeroElement =
+      document.getElementById(
+        "proposalNumber"
+      );
+
+
+    if (numeroElement) {
+
+      numeroElement.textContent =
+        gerarNumeroProposta(
+          proposal
+        );
+    }
+
+
+    const dataElement =
+      document.getElementById(
+        "proposalDate"
+      );
+
+
+    if (dataElement) {
+
+      dataElement.textContent =
+        formatarData(
+          proposal.created_at
+        );
+    }
 
 
     // ======================================
@@ -158,8 +275,11 @@ async function loadProposal() {
       ).toLocaleString(
         "pt-BR",
         {
-          style: "currency",
-          currency: "BRL"
+          style:
+            "currency",
+
+          currency:
+            "BRL"
         }
       );
 
@@ -206,16 +326,15 @@ async function loadProposal() {
     );
 
 
-    // ======================================
-    // WHATSAPP
-    // ======================================
-
     configurarWhatsApp();
 
 
   } catch (error) {
 
-    console.error(error);
+    console.error(
+      error
+    );
+
 
     alert(
       "Erro ao carregar proposta."
@@ -236,52 +355,63 @@ function configurarWhatsApp() {
     );
 
 
-  whatsappBtn.onclick = () => {
+  whatsappBtn.onclick =
+    () => {
 
-    if (!propostaAtual) {
-      return;
-    }
+      if (!propostaAtual) {
+        return;
+      }
 
 
-    const valor =
-      Number(
-        propostaAtual.value || 0
-      ).toLocaleString(
-        "pt-BR",
-        {
-          style: "currency",
-          currency: "BRL"
-        }
+      const valor =
+        Number(
+          propostaAtual.value ||
+          0
+        ).toLocaleString(
+          "pt-BR",
+          {
+            style:
+              "currency",
+
+            currency:
+              "BRL"
+          }
+        );
+
+
+      const mensagem =
+        `Olá ${propostaAtual.client_name || ""}!\n\n` +
+
+        `Preparei uma proposta comercial para você.\n\n` +
+
+        `📄 ${propostaAtual.title || "Proposta comercial"}\n` +
+
+        `💰 Investimento: ${valor}\n` +
+
+        `⏱️ Prazo: ${propostaAtual.deadline || "A definir"}\n\n` +
+
+        `Você pode visualizar e responder à proposta pelo link abaixo:\n` +
+
+        `${window.location.href}`;
+
+
+      const whatsappURL =
+        "https://wa.me/?text=" +
+        encodeURIComponent(
+          mensagem
+        );
+
+
+      window.open(
+        whatsappURL,
+        "_blank"
       );
-
-
-    const mensagem =
-      `Olá ${propostaAtual.client_name || ""}!\n\n` +
-      `Preparei uma proposta comercial para você.\n\n` +
-      `Proposta: ${propostaAtual.title || ""}\n` +
-      `Valor: ${valor}\n` +
-      `Prazo: ${propostaAtual.deadline || "A definir"}\n\n` +
-      `Visualize a proposta pelo link:\n` +
-      `${window.location.href}`;
-
-
-    const whatsappURL =
-      "https://wa.me/?text=" +
-      encodeURIComponent(
-        mensagem
-      );
-
-
-    window.open(
-      whatsappURL,
-      "_blank"
-    );
-  };
+    };
 }
 
 
 // ==========================================
-// ACEITAR PROPOSTA
+// ACEITAR
 // ==========================================
 
 async function aceitarProposta() {
@@ -303,7 +433,9 @@ async function aceitarProposta() {
     );
 
 
-  botao.disabled = true;
+  botao.disabled =
+    true;
+
 
   botao.textContent =
     "Confirmando...";
@@ -315,16 +447,21 @@ async function aceitarProposta() {
       await fetch(
         "/api/accept-proposal",
         {
-          method: "POST",
+
+          method:
+            "POST",
 
           headers: {
+
             "Content-Type":
               "application/json"
+
           },
 
-          body: JSON.stringify({
-            token: token
-          })
+          body:
+            JSON.stringify({
+              token
+            })
         }
       );
 
@@ -335,7 +472,10 @@ async function aceitarProposta() {
 
     if (!response.ok) {
 
-      console.error(data);
+      console.error(
+        data
+      );
+
 
       alert(
         data.error ||
@@ -343,10 +483,13 @@ async function aceitarProposta() {
       );
 
 
-      botao.disabled = false;
+      botao.disabled =
+        false;
+
 
       botao.textContent =
         "✓ Aceitar proposta";
+
 
       return;
     }
@@ -368,14 +511,19 @@ async function aceitarProposta() {
 
   } catch (error) {
 
-    console.error(error);
+    console.error(
+      error
+    );
+
 
     alert(
       "Erro ao aceitar proposta."
     );
 
 
-    botao.disabled = false;
+    botao.disabled =
+      false;
+
 
     botao.textContent =
       "✓ Aceitar proposta";
@@ -384,7 +532,7 @@ async function aceitarProposta() {
 
 
 // ==========================================
-// RECUSAR PROPOSTA
+// RECUSAR
 // ==========================================
 
 async function recusarProposta() {
@@ -406,7 +554,9 @@ async function recusarProposta() {
     );
 
 
-  botao.disabled = true;
+  botao.disabled =
+    true;
+
 
   botao.textContent =
     "Recusando...";
@@ -418,16 +568,21 @@ async function recusarProposta() {
       await fetch(
         "/api/reject-proposal",
         {
-          method: "POST",
+
+          method:
+            "POST",
 
           headers: {
+
             "Content-Type":
               "application/json"
+
           },
 
-          body: JSON.stringify({
-            token: token
-          })
+          body:
+            JSON.stringify({
+              token
+            })
         }
       );
 
@@ -438,7 +593,10 @@ async function recusarProposta() {
 
     if (!response.ok) {
 
-      console.error(data);
+      console.error(
+        data
+      );
+
 
       alert(
         data.error ||
@@ -446,10 +604,13 @@ async function recusarProposta() {
       );
 
 
-      botao.disabled = false;
+      botao.disabled =
+        false;
+
 
       botao.textContent =
         "✕ Recusar";
+
 
       return;
     }
@@ -471,14 +632,19 @@ async function recusarProposta() {
 
   } catch (error) {
 
-    console.error(error);
+    console.error(
+      error
+    );
+
 
     alert(
       "Erro ao recusar proposta."
     );
 
 
-    botao.disabled = false;
+    botao.disabled =
+      false;
+
 
     botao.textContent =
       "✕ Recusar";
@@ -487,10 +653,12 @@ async function recusarProposta() {
 
 
 // ==========================================
-// STATUS VISUAL
+// STATUS
 // ==========================================
 
-function updateStatusVisual(status) {
+function updateStatusVisual(
+  status
+) {
 
   const element =
     document.getElementById(
@@ -512,23 +680,25 @@ function updateStatusVisual(status) {
 
   const statusNormalizado =
     String(
-      status || "Aguardando"
+      status ||
+      "Aguardando"
     )
       .trim()
       .toLowerCase();
 
 
-  // ======================================
   // ACEITA
-  // ======================================
 
   if (
-    statusNormalizado === "aceita" ||
-    statusNormalizado === "accepted"
+    statusNormalizado ===
+      "aceita" ||
+
+    statusNormalizado ===
+      "accepted"
   ) {
 
     element.textContent =
-      "Aceita";
+      "✓ Aceita";
 
 
     element.className =
@@ -555,17 +725,18 @@ function updateStatusVisual(status) {
   }
 
 
-  // ======================================
   // RECUSADA
-  // ======================================
 
   if (
-    statusNormalizado === "recusada" ||
-    statusNormalizado === "rejected"
+    statusNormalizado ===
+      "recusada" ||
+
+    statusNormalizado ===
+      "rejected"
   ) {
 
     element.textContent =
-      "Recusada";
+      "✕ Recusada";
 
 
     element.className =
@@ -592,12 +763,10 @@ function updateStatusVisual(status) {
   }
 
 
-  // ======================================
   // AGUARDANDO
-  // ======================================
 
   element.textContent =
-    "Aguardando";
+    "⏳ Aguardando";
 
 
   element.className =
@@ -622,7 +791,7 @@ function updateStatusVisual(status) {
 
 
 // ==========================================
-// BOTÃO ACEITAR
+// EVENTOS
 // ==========================================
 
 document
@@ -634,10 +803,6 @@ document
     aceitarProposta
   );
 
-
-// ==========================================
-// BOTÃO RECUSAR
-// ==========================================
 
 document
   .getElementById(
