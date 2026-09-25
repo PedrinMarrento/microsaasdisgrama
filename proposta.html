@@ -8,6 +8,70 @@
   <title>Proposta Comercial — PropostaFlow</title>
 
   <link rel="stylesheet" href="css/style.css">
+
+  <style>
+    .proposal-company {
+      display: flex;
+      align-items: center;
+      gap: 22px;
+    }
+
+    .proposal-company-logo {
+      width: 110px;
+      height: 90px;
+
+      display: none;
+      align-items: center;
+      justify-content: center;
+
+      flex-shrink: 0;
+
+      padding: 8px;
+
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .proposal-company-logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      border-radius: 7px;
+    }
+
+    .proposal-company-info {
+      flex: 1;
+    }
+
+    .proposal-company-info h2 {
+      margin-top: 4px;
+      margin-bottom: 8px;
+    }
+
+    .proposal-company-info p:not(.eyebrow) {
+      margin: 3px 0;
+    }
+
+    @media (max-width: 600px) {
+      .proposal-company {
+        align-items: flex-start;
+      }
+
+      .proposal-company-logo {
+        width: 85px;
+        height: 75px;
+      }
+    }
+
+    @media print {
+      .proposal-public-actions {
+        display: none !important;
+      }
+    }
+  </style>
+
 </head>
 
 <body>
@@ -17,17 +81,37 @@
     <!-- EMPRESA -->
     <header class="proposal-company">
 
-      <div>
-        <p class="eyebrow">PROPOSTA COMERCIAL</p>
+      <!-- LOGO -->
+      <div
+        id="businessLogoBox"
+        class="proposal-company-logo"
+      >
+        <img
+          id="businessLogo"
+          alt="Logo da empresa"
+        >
+      </div>
+
+
+      <!-- DADOS DA EMPRESA -->
+      <div class="proposal-company-info">
+
+        <p class="eyebrow">
+          PROPOSTA COMERCIAL
+        </p>
 
         <h2 id="businessName">
           Empresa
         </h2>
 
         <p id="businessDocument"></p>
+
         <p id="businessPhone"></p>
+
         <p id="businessEmail"></p>
+
         <p id="businessAddress"></p>
+
       </div>
 
     </header>
@@ -39,6 +123,7 @@
       <div class="proposal-heading">
 
         <div>
+
           <p class="eyebrow">
             PROPOSTA PARA
           </p>
@@ -46,7 +131,9 @@
           <h1 id="publicClient">
             Cliente
           </h1>
+
         </div>
+
 
         <span
           id="publicStatus"
