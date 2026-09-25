@@ -37,73 +37,181 @@ async function loadProposal() {
     propostaAtual = proposal;
 
 
+    // ======================================
+    // LOGO DA EMPRESA
+    // ======================================
+
+    const logoBox =
+      document.getElementById(
+        "businessLogoBox"
+      );
+
+    const logo =
+      document.getElementById(
+        "businessLogo"
+      );
+
+
+    if (
+      proposal.business_logo &&
+      logoBox &&
+      logo
+    ) {
+
+      logo.src =
+        proposal.business_logo;
+
+      logoBox.style.display =
+        "flex";
+
+
+      // Se a imagem não carregar,
+      // simplesmente esconde o espaço.
+
+      logo.onerror = () => {
+
+        logoBox.style.display =
+          "none";
+
+      };
+
+    } else if (logoBox) {
+
+      logoBox.style.display =
+        "none";
+
+    }
+
+
+    // ======================================
     // EMPRESA
-    document.getElementById("businessName").textContent =
+    // ======================================
+
+    document.getElementById(
+      "businessName"
+    ).textContent =
       proposal.business_name ||
       "Proposta Comercial";
 
-    document.getElementById("businessDocument").textContent =
+
+    document.getElementById(
+      "businessDocument"
+    ).textContent =
       proposal.business_document
-        ? "CPF/CNPJ: " + proposal.business_document
+        ? "CPF/CNPJ: " +
+          proposal.business_document
         : "";
 
-    document.getElementById("businessPhone").textContent =
+
+    document.getElementById(
+      "businessPhone"
+    ).textContent =
       proposal.business_phone
-        ? "WhatsApp: " + proposal.business_phone
+        ? "WhatsApp: " +
+          proposal.business_phone
         : "";
 
-    document.getElementById("businessEmail").textContent =
+
+    document.getElementById(
+      "businessEmail"
+    ).textContent =
       proposal.business_email || "";
 
-    document.getElementById("businessAddress").textContent =
+
+    document.getElementById(
+      "businessAddress"
+    ).textContent =
       proposal.business_address || "";
 
 
+    // ======================================
     // CLIENTE
-    document.getElementById("publicClient").textContent =
-      proposal.client_name || "Cliente";
+    // ======================================
+
+    document.getElementById(
+      "publicClient"
+    ).textContent =
+      proposal.client_name ||
+      "Cliente";
 
 
+    // ======================================
     // TÍTULO
-    document.getElementById("publicTitle").textContent =
-      proposal.title || "Proposta comercial";
+    // ======================================
+
+    document.getElementById(
+      "publicTitle"
+    ).textContent =
+      proposal.title ||
+      "Proposta comercial";
 
 
+    // ======================================
     // VALOR
-    document.getElementById("publicValue").textContent =
-      Number(proposal.value || 0)
-        .toLocaleString(
-          "pt-BR",
-          {
-            style: "currency",
-            currency: "BRL"
-          }
-        );
+    // ======================================
+
+    document.getElementById(
+      "publicValue"
+    ).textContent =
+      Number(
+        proposal.value || 0
+      ).toLocaleString(
+        "pt-BR",
+        {
+          style: "currency",
+          currency: "BRL"
+        }
+      );
 
 
+    // ======================================
     // PRAZO
-    document.getElementById("publicDeadline").textContent =
-      proposal.deadline || "A definir";
+    // ======================================
+
+    document.getElementById(
+      "publicDeadline"
+    ).textContent =
+      proposal.deadline ||
+      "A definir";
 
 
+    // ======================================
     // DESCRIÇÃO
-    document.getElementById("publicDescription").textContent =
+    // ======================================
+
+    document.getElementById(
+      "publicDescription"
+    ).textContent =
       proposal.description ||
       "Sem descrição.";
 
 
+    // ======================================
     // OBSERVAÇÕES
-    document.getElementById("publicNotes").textContent =
+    // ======================================
+
+    document.getElementById(
+      "publicNotes"
+    ).textContent =
       proposal.notes ||
       "Sem observações adicionais.";
 
+
+    // ======================================
+    // STATUS
+    // ======================================
 
     updateStatusVisual(
       proposal.status
     );
 
 
+    // ======================================
+    // WHATSAPP
+    // ======================================
+
     configurarWhatsApp();
+
 
   } catch (error) {
 
@@ -127,11 +235,13 @@ function configurarWhatsApp() {
       "whatsappProposal"
     );
 
+
   whatsappBtn.onclick = () => {
 
     if (!propostaAtual) {
       return;
     }
+
 
     const valor =
       Number(
@@ -144,6 +254,7 @@ function configurarWhatsApp() {
         }
       );
 
+
     const mensagem =
       `Olá ${propostaAtual.client_name || ""}!\n\n` +
       `Preparei uma proposta comercial para você.\n\n` +
@@ -153,11 +264,13 @@ function configurarWhatsApp() {
       `Visualize a proposta pelo link:\n` +
       `${window.location.href}`;
 
+
     const whatsappURL =
       "https://wa.me/?text=" +
       encodeURIComponent(
         mensagem
       );
+
 
     window.open(
       whatsappURL,
@@ -178,16 +291,20 @@ async function aceitarProposta() {
       "Deseja aceitar esta proposta?"
     );
 
+
   if (!confirmar) {
     return;
   }
+
 
   const botao =
     document.getElementById(
       "acceptProposal"
     );
 
+
   botao.disabled = true;
+
   botao.textContent =
     "Confirmando...";
 
@@ -225,7 +342,9 @@ async function aceitarProposta() {
         "Erro ao aceitar proposta."
       );
 
+
       botao.disabled = false;
+
       botao.textContent =
         "✓ Aceitar proposta";
 
@@ -255,7 +374,9 @@ async function aceitarProposta() {
       "Erro ao aceitar proposta."
     );
 
+
     botao.disabled = false;
+
     botao.textContent =
       "✓ Aceitar proposta";
   }
@@ -272,6 +393,7 @@ async function recusarProposta() {
     confirm(
       "Tem certeza que deseja recusar esta proposta?"
     );
+
 
   if (!confirmar) {
     return;
@@ -323,6 +445,7 @@ async function recusarProposta() {
         "Erro ao recusar proposta."
       );
 
+
       botao.disabled = false;
 
       botao.textContent =
@@ -354,6 +477,7 @@ async function recusarProposta() {
       "Erro ao recusar proposta."
     );
 
+
     botao.disabled = false;
 
     botao.textContent =
@@ -373,10 +497,12 @@ function updateStatusVisual(status) {
       "publicStatus"
     );
 
+
   const aceitar =
     document.getElementById(
       "acceptProposal"
     );
+
 
   const recusar =
     document.getElementById(
@@ -392,7 +518,10 @@ function updateStatusVisual(status) {
       .toLowerCase();
 
 
+  // ======================================
   // ACEITA
+  // ======================================
+
   if (
     statusNormalizado === "aceita" ||
     statusNormalizado === "accepted"
@@ -401,24 +530,35 @@ function updateStatusVisual(status) {
     element.textContent =
       "Aceita";
 
+
     element.className =
       "tag green";
 
-    aceitar.disabled = true;
+
+    aceitar.disabled =
+      true;
+
 
     aceitar.textContent =
       "✓ Proposta aceita";
 
-    recusar.disabled = true;
+
+    recusar.disabled =
+      true;
+
 
     recusar.textContent =
       "✕ Recusar";
+
 
     return;
   }
 
 
+  // ======================================
   // RECUSADA
+  // ======================================
+
   if (
     statusNormalizado === "recusada" ||
     statusNormalizado === "rejected"
@@ -427,36 +567,54 @@ function updateStatusVisual(status) {
     element.textContent =
       "Recusada";
 
+
     element.className =
       "tag red";
 
-    aceitar.disabled = true;
+
+    aceitar.disabled =
+      true;
+
 
     aceitar.textContent =
       "✓ Aceitar proposta";
 
-    recusar.disabled = true;
+
+    recusar.disabled =
+      true;
+
 
     recusar.textContent =
       "✕ Proposta recusada";
+
 
     return;
   }
 
 
+  // ======================================
   // AGUARDANDO
+  // ======================================
+
   element.textContent =
     "Aguardando";
+
 
   element.className =
     "tag orange";
 
-  aceitar.disabled = false;
+
+  aceitar.disabled =
+    false;
+
 
   aceitar.textContent =
     "✓ Aceitar proposta";
 
-  recusar.disabled = false;
+
+  recusar.disabled =
+    false;
+
 
   recusar.textContent =
     "✕ Recusar";
