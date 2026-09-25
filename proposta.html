@@ -14,58 +14,79 @@
   <link rel="stylesheet" href="css/style.css">
 
   <style>
-
     * {
       box-sizing: border-box;
     }
 
-    body {
-      margin: 0;
-      background: #07111f;
-      color: #ffffff;
-      font-family: Arial, Helvetica, sans-serif;
+    :root {
+      --bg: #050d18;
+      --card: #0b1727;
+      --card2: #0d1b2d;
+      --border: #1e3047;
+      --text: #ffffff;
+      --muted: #8fa1b8;
+      --primary: #6678ff;
+      --primary2: #8557ff;
     }
 
+    body {
+      margin: 0;
+      background:
+        radial-gradient(
+          circle at top,
+          #10203a 0,
+          #07111f 35%,
+          #050d18 100%
+        );
 
-    /* ======================================
-       PÁGINA
-    ====================================== */
+      color: var(--text);
+
+      font-family:
+        Inter,
+        Arial,
+        Helvetica,
+        sans-serif;
+    }
 
     .proposal-wrapper {
       width: 100%;
-      max-width: 1050px;
-      margin: 0 auto;
-      padding: 55px 25px 80px;
-    }
+      max-width: 1080px;
 
+      margin: auto;
+
+      padding: 50px 20px 80px;
+    }
 
     .proposal-card {
-      background: #0b1727;
-
-      border: 1px solid #1c2c40;
-
-      border-radius: 18px;
-
       overflow: hidden;
 
+      background: var(--card);
+
+      border:
+        1px solid var(--border);
+
+      border-radius: 22px;
+
       box-shadow:
-        0 20px 60px rgba(0, 0, 0, 0.25);
+        0 30px 80px
+        rgba(0, 0, 0, .35);
     }
 
-
-    /* ======================================
-       EMPRESA
-    ====================================== */
+    /* ===============================
+       CABEÇALHO
+    =============================== */
 
     .proposal-company {
-      padding: 35px 40px;
-
       display: flex;
+
+      justify-content:
+        space-between;
+
       align-items: center;
-      justify-content: space-between;
+
       gap: 30px;
 
-      border-bottom: 1px solid #1c2c40;
+      padding: 38px 40px;
 
       background:
         linear-gradient(
@@ -73,36 +94,39 @@
           #0d1b2d,
           #091524
         );
-    }
 
+      border-bottom:
+        1px solid var(--border);
+    }
 
     .company-left {
       display: flex;
+
       align-items: center;
+
       gap: 22px;
     }
 
-
     .proposal-company-logo {
+      display: none;
+
       width: 105px;
       height: 105px;
 
-      display: none;
+      flex-shrink: 0;
 
       align-items: center;
       justify-content: center;
 
-      flex-shrink: 0;
-
       padding: 10px;
 
-      border-radius: 16px;
+      background: #050d18;
 
-      background: #07111f;
+      border:
+        1px solid #263b56;
 
-      border: 1px solid #263850;
+      border-radius: 18px;
     }
-
 
     .proposal-company-logo img {
       width: 100%;
@@ -110,25 +134,22 @@
 
       object-fit: contain;
 
-      border-radius: 9px;
+      border-radius: 10px;
     }
-
 
     .company-info h2 {
-      margin: 5px 0 10px;
+      margin: 6px 0 10px;
 
-      font-size: 27px;
+      font-size: 28px;
     }
 
+    .company-info p:not(.eyebrow) {
+      margin: 5px 0;
 
-    .company-info p {
-      margin: 4px 0;
-
-      color: #b8c3d2;
+      color: #b9c5d4;
 
       font-size: 14px;
     }
-
 
     .eyebrow {
       margin: 0;
@@ -139,80 +160,115 @@
 
       font-weight: 800;
 
-      letter-spacing: 1.5px;
+      letter-spacing: 1.6px;
 
       text-transform: uppercase;
     }
-
 
     .proposal-brand {
       text-align: right;
     }
 
+    .proposal-brand-name {
+      font-size: 22px;
 
-    .proposal-brand strong {
-      display: block;
-
-      font-size: 20px;
-
-      margin-bottom: 5px;
+      font-weight: 800;
     }
 
+    .proposal-brand-name span {
+      color: #7884ff;
+    }
 
-    .proposal-brand span {
-      color: #8492a6;
+    .proposal-brand p {
+      margin: 7px 0 0;
+
+      color: var(--muted);
 
       font-size: 13px;
     }
 
+    /* ===============================
+       META
+    =============================== */
 
-    /* ======================================
+    .proposal-meta {
+      display: grid;
+
+      grid-template-columns:
+        repeat(3, 1fr);
+
+      gap: 1px;
+
+      background: var(--border);
+
+      border-bottom:
+        1px solid var(--border);
+    }
+
+    .meta-item {
+      padding: 18px 25px;
+
+      background: #091524;
+    }
+
+    .meta-item span {
+      display: block;
+
+      margin-bottom: 6px;
+
+      color: #71849d;
+
+      font-size: 11px;
+
+      font-weight: 700;
+
+      letter-spacing: 1px;
+
+      text-transform: uppercase;
+    }
+
+    .meta-item strong {
+      font-size: 14px;
+
+      color: #e6edf7;
+    }
+
+    /* ===============================
        CONTEÚDO
-    ====================================== */
+    =============================== */
 
     .proposal-content {
       padding: 45px 40px;
     }
 
-
-    /* ======================================
-       CLIENTE + STATUS
-    ====================================== */
-
     .proposal-heading {
       display: flex;
 
-      align-items: flex-start;
+      align-items:
+        flex-start;
 
-      justify-content: space-between;
+      justify-content:
+        space-between;
 
       gap: 30px;
 
       margin-bottom: 35px;
     }
 
-
     .proposal-heading h1 {
       margin: 8px 0 0;
 
-      font-size: 38px;
+      font-size: 40px;
 
       line-height: 1.1;
     }
-
-
-    /* ======================================
-       STATUS
-    ====================================== */
 
     .tag {
       display: inline-flex;
 
       align-items: center;
 
-      justify-content: center;
-
-      padding: 8px 14px;
+      padding: 9px 15px;
 
       border-radius: 999px;
 
@@ -221,141 +277,130 @@
       font-weight: 800;
     }
 
-
     .tag.orange {
       color: #ffb84d;
 
-      background: rgba(
-        255,
-        184,
-        77,
-        0.12
-      );
+      background:
+        rgba(255,184,77,.12);
 
-      border: 1px solid rgba(
-        255,
-        184,
-        77,
-        0.25
-      );
+      border:
+        1px solid
+        rgba(255,184,77,.28);
     }
-
 
     .tag.green {
-      color: #5ee6a8;
+      color: #55e5a2;
 
-      background: rgba(
-        94,
-        230,
-        168,
-        0.12
-      );
+      background:
+        rgba(85,229,162,.12);
 
-      border: 1px solid rgba(
-        94,
-        230,
-        168,
-        0.25
-      );
+      border:
+        1px solid
+        rgba(85,229,162,.28);
     }
-
 
     .tag.red {
       color: #ff7070;
 
-      background: rgba(
-        255,
-        112,
-        112,
-        0.12
-      );
+      background:
+        rgba(255,112,112,.12);
 
-      border: 1px solid rgba(
-        255,
-        112,
-        112,
-        0.25
-      );
+      border:
+        1px solid
+        rgba(255,112,112,.28);
     }
-
 
     .tag.gray {
       color: #aab5c4;
 
       background: #132136;
 
-      border: 1px solid #263850;
+      border:
+        1px solid #263850;
     }
-
-
-    /* ======================================
-       DIVISOR
-    ====================================== */
 
     .proposal-divider {
       height: 1px;
 
-      background: #1c2c40;
+      margin: 0 0 38px;
 
-      border: none;
+      background: var(--border);
 
-      margin: 0 0 35px;
+      border: 0;
     }
 
-
-    /* ======================================
-       SERVIÇO
-    ====================================== */
+    /* ===============================
+       SEÇÕES
+    =============================== */
 
     .proposal-section {
       margin-bottom: 38px;
     }
 
-
     .proposal-section h2 {
-      margin: 8px 0 0;
+      margin: 9px 0 0;
 
-      font-size: 25px;
+      font-size: 26px;
     }
 
+    .proposal-section
+    p:not(.eyebrow) {
+      margin-top: 12px;
 
-    .proposal-section p:not(.eyebrow) {
       color: #c5cfdb;
 
-      line-height: 1.7;
-
-      margin-top: 10px;
+      line-height: 1.75;
 
       white-space: pre-wrap;
     }
 
-
-    /* ======================================
-       VALOR E PRAZO
-    ====================================== */
+    /* ===============================
+       RESUMO
+    =============================== */
 
     .proposal-highlight {
       display: grid;
 
       grid-template-columns:
-        repeat(2, 1fr);
+        1.3fr 1fr;
 
       gap: 16px;
 
-      margin-bottom: 40px;
+      margin-bottom: 42px;
     }
-
 
     .highlight-box {
-      padding: 25px;
+      position: relative;
 
-      border-radius: 14px;
+      overflow: hidden;
 
-      border: 1px solid #21334a;
+      padding: 26px;
 
-      background: #0d1b2d;
+      background: var(--card2);
+
+      border:
+        1px solid #21364f;
+
+      border-radius: 16px;
     }
 
+    .highlight-box:first-child::before {
+      content: "";
+
+      position: absolute;
+
+      top: 0;
+      left: 0;
+
+      width: 4px;
+      height: 100%;
+
+      background:
+        linear-gradient(
+          #6678ff,
+          #8b5cff
+        );
+    }
 
     .highlight-box small {
       display: block;
@@ -364,61 +409,127 @@
 
       color: #7fa3ff;
 
-      font-size: 12px;
+      font-size: 11px;
 
-      font-weight: 700;
+      font-weight: 800;
 
-      letter-spacing: 0.7px;
+      letter-spacing: 1px;
     }
-
 
     .highlight-box strong {
       display: block;
 
-      font-size: 27px;
-
-      color: #ffffff;
+      font-size: 29px;
     }
 
+    /* ===============================
+       AVISO
+    =============================== */
 
-    /* ======================================
-       ACEITE
-    ====================================== */
+    .validity-note {
+      display: flex;
+
+      gap: 13px;
+
+      margin-bottom: 40px;
+
+      padding: 17px 19px;
+
+      background:
+        rgba(102,120,255,.07);
+
+      border:
+        1px solid
+        rgba(102,120,255,.20);
+
+      border-radius: 13px;
+    }
+
+    .validity-icon {
+      font-size: 19px;
+    }
+
+    .validity-note strong {
+      display: block;
+
+      margin-bottom: 4px;
+
+      font-size: 14px;
+    }
+
+    .validity-note p {
+      margin: 0;
+
+      color: #8fa1b8;
+
+      font-size: 13px;
+
+      line-height: 1.5;
+    }
+
+    /* ===============================
+       APROVAÇÃO
+    =============================== */
 
     .acceptance-area {
       margin-top: 45px;
 
-      padding: 25px;
-
-      border-radius: 14px;
+      padding: 28px;
 
       background: #091524;
 
-      border: 1px solid #1d3047;
+      border:
+        1px solid #21364f;
+
+      border-radius: 16px;
     }
 
+    .acceptance-top {
+      display: flex;
+
+      align-items: center;
+
+      gap: 13px;
+
+      margin-bottom: 10px;
+    }
+
+    .acceptance-check {
+      display: flex;
+
+      width: 38px;
+      height: 38px;
+
+      align-items: center;
+      justify-content: center;
+
+      flex-shrink: 0;
+
+      color: #91a3ff;
+
+      background:
+        rgba(102,120,255,.12);
+
+      border-radius: 10px;
+
+      font-weight: 900;
+    }
 
     .acceptance-area h3 {
-      margin: 0 0 8px;
-
-      font-size: 17px;
-    }
-
-
-    .acceptance-area p {
       margin: 0;
 
-      color: #8f9eb1;
+      font-size: 18px;
+    }
+
+    .acceptance-area > p {
+      margin: 0;
+
+      color: var(--muted);
 
       font-size: 13px;
 
-      line-height: 1.6;
+      line-height: 1.7;
     }
-
-
-    /* ======================================
-       BOTÕES
-    ====================================== */
 
     .proposal-public-actions {
       display: flex;
@@ -427,139 +538,153 @@
 
       gap: 10px;
 
-      margin-top: 25px;
+      margin-top: 22px;
     }
 
-
     .proposal-public-actions button {
-      min-height: 46px;
+      min-height: 47px;
 
       padding: 0 20px;
 
-      border-radius: 10px;
+      border-radius: 11px;
 
-      font-weight: 700;
+      font-weight: 750;
 
       cursor: pointer;
     }
 
+    .proposal-public-actions
+    button:disabled {
+      cursor: not-allowed;
 
-    /* ======================================
+      opacity: .6;
+    }
+
+    .digital-notice {
+      margin-top: 17px !important;
+
+      padding-top: 15px;
+
+      border-top:
+        1px solid #1b2d43;
+
+      color: #657991 !important;
+
+      font-size: 11px !important;
+    }
+
+    /* ===============================
        RODAPÉ
-    ====================================== */
+    =============================== */
 
     .proposal-footer {
-      padding: 20px 40px;
-
-      border-top: 1px solid #1c2c40;
-
       display: flex;
 
-      justify-content: space-between;
-
-      align-items: center;
+      justify-content:
+        space-between;
 
       gap: 20px;
 
-      color: #66758a;
+      padding: 22px 40px;
+
+      color: #63758d;
+
+      background: #081321;
+
+      border-top:
+        1px solid var(--border);
 
       font-size: 12px;
     }
 
-
     .proposal-footer strong {
-      color: #8da2bd;
+      color: #9aacbf;
     }
 
+    /* ===============================
+       MOBILE
+    =============================== */
 
-    /* ======================================
-       CELULAR
-    ====================================== */
-
-    @media (
-      max-width: 700px
-    ) {
+    @media(max-width:700px) {
 
       .proposal-wrapper {
         padding:
-          20px 12px 50px;
+          15px 10px 50px;
       }
-
 
       .proposal-card {
-        border-radius: 12px;
+        border-radius: 14px;
       }
-
 
       .proposal-company {
         padding: 25px 20px;
       }
 
-
       .company-left {
         align-items: flex-start;
       }
-
 
       .proposal-company-logo {
         width: 75px;
         height: 75px;
       }
 
-
       .company-info h2 {
         font-size: 21px;
       }
 
+      .company-info
+      p:not(.eyebrow) {
+        font-size: 12px;
+      }
 
       .proposal-brand {
         display: none;
       }
 
+      .proposal-meta {
+        grid-template-columns: 1fr;
+      }
+
+      .meta-item {
+        padding: 14px 20px;
+      }
 
       .proposal-content {
         padding: 30px 20px;
       }
 
-
       .proposal-heading {
         flex-direction: column;
       }
 
-
       .proposal-heading h1 {
-        font-size: 31px;
+        font-size: 32px;
       }
-
 
       .proposal-highlight {
         grid-template-columns: 1fr;
       }
 
-
       .proposal-public-actions {
         flex-direction: column;
       }
 
-
-      .proposal-public-actions button {
+      .proposal-public-actions
+      button {
         width: 100%;
       }
 
-
       .proposal-footer {
-        padding: 20px;
-
         flex-direction: column;
 
-        align-items: flex-start;
+        padding: 20px;
       }
     }
 
-
-    /* ======================================
-       PDF / IMPRESSÃO
-    ====================================== */
+    /* ===============================
+       IMPRESSÃO / PDF
+    =============================== */
 
     @media print {
 
@@ -569,112 +694,93 @@
         color: black !important;
       }
 
-
       .proposal-wrapper {
         max-width: none;
 
         padding: 0;
       }
 
-
       .proposal-card {
-        box-shadow: none;
+        background: white;
 
         border: none;
 
-        background: white;
+        border-radius: 0;
 
-        color: black;
+        box-shadow: none;
       }
 
-
-      .proposal-company {
-        background: white;
-
-        border-bottom:
-          1px solid #dddddd;
+      .proposal-company,
+      .meta-item,
+      .proposal-content,
+      .proposal-footer {
+        background: white !important;
       }
 
-
-      .proposal-content {
-        background: white;
+      .proposal-company,
+      .proposal-meta,
+      .proposal-footer {
+        border-color: #ddd;
       }
-
 
       .company-info h2,
       .proposal-heading h1,
       .proposal-section h2,
-      .highlight-box strong {
-        color: black !important;
+      .highlight-box strong,
+      .meta-item strong,
+      .acceptance-area h3 {
+        color: #111 !important;
       }
-
 
       .company-info p,
-      .proposal-section p:not(.eyebrow),
-      .acceptance-area p {
-        color: #333333 !important;
+      .proposal-section
+      p:not(.eyebrow),
+      .acceptance-area > p {
+        color: #333 !important;
       }
-
 
       .highlight-box,
-      .acceptance-area {
+      .acceptance-area,
+      .validity-note {
         background: #f7f7f7;
 
-        border-color: #dddddd;
+        border-color: #ddd;
       }
-
 
       .proposal-public-actions {
         display: none !important;
       }
 
-
-      .proposal-footer {
-        border-color: #dddddd;
+      .digital-notice {
+        display: none;
       }
-
     }
 
   </style>
 
 </head>
 
-
 <body>
-
 
   <main class="proposal-wrapper">
 
+    <article class="proposal-card">
 
-    <div class="proposal-card">
-
-
-      <!-- =================================
-           EMPRESA
-      ================================== -->
+      <!-- EMPRESA -->
 
       <header class="proposal-company">
 
-
         <div class="company-left">
-
-
-          <!-- LOGO -->
 
           <div
             id="businessLogoBox"
             class="proposal-company-logo"
           >
-
             <img
               id="businessLogo"
               alt="Logo da empresa"
             >
-
           </div>
-
-
-          <!-- INFORMAÇÕES -->
 
           <div class="company-info">
 
@@ -682,68 +788,94 @@
               Proposta Comercial
             </p>
 
-
             <h2 id="businessName">
               Empresa
             </h2>
 
+            <p id="businessDocument"></p>
 
-            <p id="businessDocument">
-            </p>
+            <p id="businessPhone"></p>
 
+            <p id="businessEmail"></p>
 
-            <p id="businessPhone">
-            </p>
-
-
-            <p id="businessEmail">
-            </p>
-
-
-            <p id="businessAddress">
-            </p>
+            <p id="businessAddress"></p>
 
           </div>
 
-
         </div>
-
 
         <div class="proposal-brand">
 
-          <strong>
-            PropostaFlow
-          </strong>
+          <div class="proposal-brand-name">
+            Proposta<span>Flow</span>
+          </div>
 
-          <span>
-            Proposta comercial digital
-          </span>
+          <p>
+            Propostas profissionais,
+            simples e digitais.
+          </p>
 
         </div>
-
 
       </header>
 
 
+      <!-- DADOS DA PROPOSTA -->
 
-      <!-- =================================
-           CONTEÚDO
-      ================================== -->
+      <div class="proposal-meta">
+
+        <div class="meta-item">
+
+          <span>
+            Proposta
+          </span>
+
+          <strong id="proposalNumber">
+            #--------
+          </strong>
+
+        </div>
+
+
+        <div class="meta-item">
+
+          <span>
+            Emitida em
+          </span>
+
+          <strong id="proposalDate">
+            --
+          </strong>
+
+        </div>
+
+
+        <div class="meta-item">
+
+          <span>
+            Validade
+          </span>
+
+          <strong id="proposalValidity">
+            7 dias
+          </strong>
+
+        </div>
+
+      </div>
+
+
+      <!-- CONTEÚDO -->
 
       <section class="proposal-content">
 
-
-        <!-- CLIENTE -->
-
         <div class="proposal-heading">
-
 
           <div>
 
             <p class="eyebrow">
-              Proposta para
+              Preparada especialmente para
             </p>
-
 
             <h1 id="publicClient">
               Cliente
@@ -759,12 +891,10 @@
             Carregando...
           </span>
 
-
         </div>
 
 
         <hr class="proposal-divider">
-
 
 
         <!-- SERVIÇO -->
@@ -775,7 +905,6 @@
             Serviço / Projeto
           </p>
 
-
           <h2 id="publicTitle">
             Carregando...
           </h2>
@@ -783,18 +912,15 @@
         </div>
 
 
-
-        <!-- VALOR / PRAZO -->
+        <!-- INVESTIMENTO -->
 
         <div class="proposal-highlight">
-
 
           <div class="highlight-box">
 
             <small>
               INVESTIMENTO
             </small>
-
 
             <strong id="publicValue">
               R$ 0,00
@@ -806,9 +932,8 @@
           <div class="highlight-box">
 
             <small>
-              PRAZO
+              PRAZO ESTIMADO
             </small>
-
 
             <strong id="publicDeadline">
               -
@@ -816,9 +941,7 @@
 
           </div>
 
-
         </div>
-
 
 
         <!-- DESCRIÇÃO -->
@@ -826,9 +949,8 @@
         <div class="proposal-section">
 
           <p class="eyebrow">
-            Descrição
+            Sobre o projeto
           </p>
-
 
           <p id="publicDescription">
             Carregando...
@@ -837,15 +959,13 @@
         </div>
 
 
-
         <!-- OBSERVAÇÕES -->
 
         <div class="proposal-section">
 
           <p class="eyebrow">
-            Observações
+            Informações adicionais
           </p>
-
 
           <p id="publicNotes">
             -
@@ -854,25 +974,56 @@
         </div>
 
 
+        <!-- VALIDADE -->
 
-        <!-- ACEITE -->
+        <div class="validity-note">
+
+          <div class="validity-icon">
+            ◷
+          </div>
+
+          <div>
+
+            <strong>
+              Validade desta proposta
+            </strong>
+
+            <p id="validityText">
+              Esta proposta é válida por
+              7 dias a partir da data de emissão.
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <!-- APROVAÇÃO -->
 
         <div class="acceptance-area">
 
-          <h3>
-            Aprovação da proposta
-          </h3>
+          <div class="acceptance-top">
+
+            <div class="acceptance-check">
+              ✓
+            </div>
+
+            <h3>
+              Aprovação da proposta
+            </h3>
+
+          </div>
 
 
           <p>
-            Confira todas as informações acima.
-            Caso esteja de acordo, utilize o botão
-            abaixo para aceitar esta proposta.
+            Revise as informações desta proposta.
+            Caso esteja de acordo com os termos,
+            investimento e prazo apresentados,
+            você pode aprová-la abaixo.
           </p>
 
 
           <div class="proposal-public-actions">
-
 
             <button
               id="acceptProposal"
@@ -905,56 +1056,48 @@
               Imprimir / Salvar PDF
             </button>
 
-
           </div>
 
-        </div>
 
+          <p class="digital-notice">
+            Ao selecionar “Aceitar proposta”,
+            o status desta proposta será
+            registrado digitalmente no
+            PropostaFlow.
+          </p>
+
+        </div>
 
       </section>
 
 
-
-      <!-- =================================
-           RODAPÉ
-      ================================== -->
+      <!-- RODAPÉ -->
 
       <footer class="proposal-footer">
 
         <span>
-          Documento gerado digitalmente.
+          Documento comercial digital.
         </span>
 
-
         <span>
-          Desenvolvido com
+          Criado com
           <strong>PropostaFlow</strong>
         </span>
 
       </footer>
 
-
-    </div>
-
+    </article>
 
   </main>
 
-
-
-  <!-- =====================================
-       SCRIPTS
-  ====================================== -->
 
   <script
     src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
   ></script>
 
-
   <script src="js/supabase.js"></script>
 
-
   <script src="js/proposta-publica.js"></script>
-
 
 </body>
 
