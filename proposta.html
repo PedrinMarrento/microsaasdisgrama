@@ -3,270 +3,958 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
 
   <title>Proposta Comercial — PropostaFlow</title>
 
   <link rel="stylesheet" href="css/style.css">
 
   <style>
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: #07111f;
+      color: #ffffff;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+
+    /* ======================================
+       PÁGINA
+    ====================================== */
+
+    .proposal-wrapper {
+      width: 100%;
+      max-width: 1050px;
+      margin: 0 auto;
+      padding: 55px 25px 80px;
+    }
+
+
+    .proposal-card {
+      background: #0b1727;
+
+      border: 1px solid #1c2c40;
+
+      border-radius: 18px;
+
+      overflow: hidden;
+
+      box-shadow:
+        0 20px 60px rgba(0, 0, 0, 0.25);
+    }
+
+
+    /* ======================================
+       EMPRESA
+    ====================================== */
+
     .proposal-company {
+      padding: 35px 40px;
+
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 30px;
+
+      border-bottom: 1px solid #1c2c40;
+
+      background:
+        linear-gradient(
+          135deg,
+          #0d1b2d,
+          #091524
+        );
+    }
+
+
+    .company-left {
       display: flex;
       align-items: center;
       gap: 22px;
     }
 
+
     .proposal-company-logo {
-      width: 110px;
-      height: 90px;
+      width: 105px;
+      height: 105px;
 
       display: none;
+
       align-items: center;
       justify-content: center;
 
       flex-shrink: 0;
 
-      padding: 8px;
+      padding: 10px;
 
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 12px;
+      border-radius: 16px;
 
-      background: rgba(255, 255, 255, 0.03);
+      background: #07111f;
+
+      border: 1px solid #263850;
     }
+
 
     .proposal-company-logo img {
       width: 100%;
       height: 100%;
+
       object-fit: contain;
-      border-radius: 7px;
+
+      border-radius: 9px;
     }
 
-    .proposal-company-info {
-      flex: 1;
+
+    .company-info h2 {
+      margin: 5px 0 10px;
+
+      font-size: 27px;
     }
 
-    .proposal-company-info h2 {
-      margin-top: 4px;
-      margin-bottom: 8px;
+
+    .company-info p {
+      margin: 4px 0;
+
+      color: #b8c3d2;
+
+      font-size: 14px;
     }
 
-    .proposal-company-info p:not(.eyebrow) {
-      margin: 3px 0;
+
+    .eyebrow {
+      margin: 0;
+
+      color: #7797ff !important;
+
+      font-size: 12px !important;
+
+      font-weight: 800;
+
+      letter-spacing: 1.5px;
+
+      text-transform: uppercase;
     }
 
-    @media (max-width: 600px) {
+
+    .proposal-brand {
+      text-align: right;
+    }
+
+
+    .proposal-brand strong {
+      display: block;
+
+      font-size: 20px;
+
+      margin-bottom: 5px;
+    }
+
+
+    .proposal-brand span {
+      color: #8492a6;
+
+      font-size: 13px;
+    }
+
+
+    /* ======================================
+       CONTEÚDO
+    ====================================== */
+
+    .proposal-content {
+      padding: 45px 40px;
+    }
+
+
+    /* ======================================
+       CLIENTE + STATUS
+    ====================================== */
+
+    .proposal-heading {
+      display: flex;
+
+      align-items: flex-start;
+
+      justify-content: space-between;
+
+      gap: 30px;
+
+      margin-bottom: 35px;
+    }
+
+
+    .proposal-heading h1 {
+      margin: 8px 0 0;
+
+      font-size: 38px;
+
+      line-height: 1.1;
+    }
+
+
+    /* ======================================
+       STATUS
+    ====================================== */
+
+    .tag {
+      display: inline-flex;
+
+      align-items: center;
+
+      justify-content: center;
+
+      padding: 8px 14px;
+
+      border-radius: 999px;
+
+      font-size: 12px;
+
+      font-weight: 800;
+    }
+
+
+    .tag.orange {
+      color: #ffb84d;
+
+      background: rgba(
+        255,
+        184,
+        77,
+        0.12
+      );
+
+      border: 1px solid rgba(
+        255,
+        184,
+        77,
+        0.25
+      );
+    }
+
+
+    .tag.green {
+      color: #5ee6a8;
+
+      background: rgba(
+        94,
+        230,
+        168,
+        0.12
+      );
+
+      border: 1px solid rgba(
+        94,
+        230,
+        168,
+        0.25
+      );
+    }
+
+
+    .tag.red {
+      color: #ff7070;
+
+      background: rgba(
+        255,
+        112,
+        112,
+        0.12
+      );
+
+      border: 1px solid rgba(
+        255,
+        112,
+        112,
+        0.25
+      );
+    }
+
+
+    .tag.gray {
+      color: #aab5c4;
+
+      background: #132136;
+
+      border: 1px solid #263850;
+    }
+
+
+    /* ======================================
+       DIVISOR
+    ====================================== */
+
+    .proposal-divider {
+      height: 1px;
+
+      background: #1c2c40;
+
+      border: none;
+
+      margin: 0 0 35px;
+    }
+
+
+    /* ======================================
+       SERVIÇO
+    ====================================== */
+
+    .proposal-section {
+      margin-bottom: 38px;
+    }
+
+
+    .proposal-section h2 {
+      margin: 8px 0 0;
+
+      font-size: 25px;
+    }
+
+
+    .proposal-section p:not(.eyebrow) {
+      color: #c5cfdb;
+
+      line-height: 1.7;
+
+      margin-top: 10px;
+
+      white-space: pre-wrap;
+    }
+
+
+    /* ======================================
+       VALOR E PRAZO
+    ====================================== */
+
+    .proposal-highlight {
+      display: grid;
+
+      grid-template-columns:
+        repeat(2, 1fr);
+
+      gap: 16px;
+
+      margin-bottom: 40px;
+    }
+
+
+    .highlight-box {
+      padding: 25px;
+
+      border-radius: 14px;
+
+      border: 1px solid #21334a;
+
+      background: #0d1b2d;
+    }
+
+
+    .highlight-box small {
+      display: block;
+
+      margin-bottom: 10px;
+
+      color: #7fa3ff;
+
+      font-size: 12px;
+
+      font-weight: 700;
+
+      letter-spacing: 0.7px;
+    }
+
+
+    .highlight-box strong {
+      display: block;
+
+      font-size: 27px;
+
+      color: #ffffff;
+    }
+
+
+    /* ======================================
+       ACEITE
+    ====================================== */
+
+    .acceptance-area {
+      margin-top: 45px;
+
+      padding: 25px;
+
+      border-radius: 14px;
+
+      background: #091524;
+
+      border: 1px solid #1d3047;
+    }
+
+
+    .acceptance-area h3 {
+      margin: 0 0 8px;
+
+      font-size: 17px;
+    }
+
+
+    .acceptance-area p {
+      margin: 0;
+
+      color: #8f9eb1;
+
+      font-size: 13px;
+
+      line-height: 1.6;
+    }
+
+
+    /* ======================================
+       BOTÕES
+    ====================================== */
+
+    .proposal-public-actions {
+      display: flex;
+
+      flex-wrap: wrap;
+
+      gap: 10px;
+
+      margin-top: 25px;
+    }
+
+
+    .proposal-public-actions button {
+      min-height: 46px;
+
+      padding: 0 20px;
+
+      border-radius: 10px;
+
+      font-weight: 700;
+
+      cursor: pointer;
+    }
+
+
+    /* ======================================
+       RODAPÉ
+    ====================================== */
+
+    .proposal-footer {
+      padding: 20px 40px;
+
+      border-top: 1px solid #1c2c40;
+
+      display: flex;
+
+      justify-content: space-between;
+
+      align-items: center;
+
+      gap: 20px;
+
+      color: #66758a;
+
+      font-size: 12px;
+    }
+
+
+    .proposal-footer strong {
+      color: #8da2bd;
+    }
+
+
+    /* ======================================
+       CELULAR
+    ====================================== */
+
+    @media (
+      max-width: 700px
+    ) {
+
+      .proposal-wrapper {
+        padding:
+          20px 12px 50px;
+      }
+
+
+      .proposal-card {
+        border-radius: 12px;
+      }
+
+
       .proposal-company {
+        padding: 25px 20px;
+      }
+
+
+      .company-left {
         align-items: flex-start;
       }
 
+
       .proposal-company-logo {
-        width: 85px;
+        width: 75px;
         height: 75px;
+      }
+
+
+      .company-info h2 {
+        font-size: 21px;
+      }
+
+
+      .proposal-brand {
+        display: none;
+      }
+
+
+      .proposal-content {
+        padding: 30px 20px;
+      }
+
+
+      .proposal-heading {
+        flex-direction: column;
+      }
+
+
+      .proposal-heading h1 {
+        font-size: 31px;
+      }
+
+
+      .proposal-highlight {
+        grid-template-columns: 1fr;
+      }
+
+
+      .proposal-public-actions {
+        flex-direction: column;
+      }
+
+
+      .proposal-public-actions button {
+        width: 100%;
+      }
+
+
+      .proposal-footer {
+        padding: 20px;
+
+        flex-direction: column;
+
+        align-items: flex-start;
       }
     }
 
+
+    /* ======================================
+       PDF / IMPRESSÃO
+    ====================================== */
+
     @media print {
+
+      body {
+        background: white !important;
+
+        color: black !important;
+      }
+
+
+      .proposal-wrapper {
+        max-width: none;
+
+        padding: 0;
+      }
+
+
+      .proposal-card {
+        box-shadow: none;
+
+        border: none;
+
+        background: white;
+
+        color: black;
+      }
+
+
+      .proposal-company {
+        background: white;
+
+        border-bottom:
+          1px solid #dddddd;
+      }
+
+
+      .proposal-content {
+        background: white;
+      }
+
+
+      .company-info h2,
+      .proposal-heading h1,
+      .proposal-section h2,
+      .highlight-box strong {
+        color: black !important;
+      }
+
+
+      .company-info p,
+      .proposal-section p:not(.eyebrow),
+      .acceptance-area p {
+        color: #333333 !important;
+      }
+
+
+      .highlight-box,
+      .acceptance-area {
+        background: #f7f7f7;
+
+        border-color: #dddddd;
+      }
+
+
       .proposal-public-actions {
         display: none !important;
       }
+
+
+      .proposal-footer {
+        border-color: #dddddd;
+      }
+
     }
+
   </style>
 
 </head>
 
+
 <body>
 
-  <main class="proposal-public">
 
-    <!-- EMPRESA -->
-    <header class="proposal-company">
-
-      <!-- LOGO -->
-      <div
-        id="businessLogoBox"
-        class="proposal-company-logo"
-      >
-        <img
-          id="businessLogo"
-          alt="Logo da empresa"
-        >
-      </div>
+  <main class="proposal-wrapper">
 
 
-      <!-- DADOS DA EMPRESA -->
-      <div class="proposal-company-info">
-
-        <p class="eyebrow">
-          PROPOSTA COMERCIAL
-        </p>
-
-        <h2 id="businessName">
-          Empresa
-        </h2>
-
-        <p id="businessDocument"></p>
-
-        <p id="businessPhone"></p>
-
-        <p id="businessEmail"></p>
-
-        <p id="businessAddress"></p>
-
-      </div>
-
-    </header>
+    <div class="proposal-card">
 
 
-    <!-- PROPOSTA -->
-    <section class="proposal-content">
+      <!-- =================================
+           EMPRESA
+      ================================== -->
 
-      <div class="proposal-heading">
+      <header class="proposal-company">
 
-        <div>
+
+        <div class="company-left">
+
+
+          <!-- LOGO -->
+
+          <div
+            id="businessLogoBox"
+            class="proposal-company-logo"
+          >
+
+            <img
+              id="businessLogo"
+              alt="Logo da empresa"
+            >
+
+          </div>
+
+
+          <!-- INFORMAÇÕES -->
+
+          <div class="company-info">
+
+            <p class="eyebrow">
+              Proposta Comercial
+            </p>
+
+
+            <h2 id="businessName">
+              Empresa
+            </h2>
+
+
+            <p id="businessDocument">
+            </p>
+
+
+            <p id="businessPhone">
+            </p>
+
+
+            <p id="businessEmail">
+            </p>
+
+
+            <p id="businessAddress">
+            </p>
+
+          </div>
+
+
+        </div>
+
+
+        <div class="proposal-brand">
+
+          <strong>
+            PropostaFlow
+          </strong>
+
+          <span>
+            Proposta comercial digital
+          </span>
+
+        </div>
+
+
+      </header>
+
+
+
+      <!-- =================================
+           CONTEÚDO
+      ================================== -->
+
+      <section class="proposal-content">
+
+
+        <!-- CLIENTE -->
+
+        <div class="proposal-heading">
+
+
+          <div>
+
+            <p class="eyebrow">
+              Proposta para
+            </p>
+
+
+            <h1 id="publicClient">
+              Cliente
+            </h1>
+
+          </div>
+
+
+          <span
+            id="publicStatus"
+            class="tag gray"
+          >
+            Carregando...
+          </span>
+
+
+        </div>
+
+
+        <hr class="proposal-divider">
+
+
+
+        <!-- SERVIÇO -->
+
+        <div class="proposal-section">
 
           <p class="eyebrow">
-            PROPOSTA PARA
+            Serviço / Projeto
           </p>
 
-          <h1 id="publicClient">
-            Cliente
-          </h1>
+
+          <h2 id="publicTitle">
+            Carregando...
+          </h2>
 
         </div>
 
 
-        <span
-          id="publicStatus"
-          class="tag gray"
-        >
-          Carregando...
+
+        <!-- VALOR / PRAZO -->
+
+        <div class="proposal-highlight">
+
+
+          <div class="highlight-box">
+
+            <small>
+              INVESTIMENTO
+            </small>
+
+
+            <strong id="publicValue">
+              R$ 0,00
+            </strong>
+
+          </div>
+
+
+          <div class="highlight-box">
+
+            <small>
+              PRAZO
+            </small>
+
+
+            <strong id="publicDeadline">
+              -
+            </strong>
+
+          </div>
+
+
+        </div>
+
+
+
+        <!-- DESCRIÇÃO -->
+
+        <div class="proposal-section">
+
+          <p class="eyebrow">
+            Descrição
+          </p>
+
+
+          <p id="publicDescription">
+            Carregando...
+          </p>
+
+        </div>
+
+
+
+        <!-- OBSERVAÇÕES -->
+
+        <div class="proposal-section">
+
+          <p class="eyebrow">
+            Observações
+          </p>
+
+
+          <p id="publicNotes">
+            -
+          </p>
+
+        </div>
+
+
+
+        <!-- ACEITE -->
+
+        <div class="acceptance-area">
+
+          <h3>
+            Aprovação da proposta
+          </h3>
+
+
+          <p>
+            Confira todas as informações acima.
+            Caso esteja de acordo, utilize o botão
+            abaixo para aceitar esta proposta.
+          </p>
+
+
+          <div class="proposal-public-actions">
+
+
+            <button
+              id="acceptProposal"
+              class="btn btn-primary"
+            >
+              ✓ Aceitar proposta
+            </button>
+
+
+            <button
+              id="rejectProposal"
+              class="btn btn-ghost"
+            >
+              ✕ Recusar
+            </button>
+
+
+            <button
+              id="whatsappProposal"
+              class="btn btn-ghost"
+            >
+              WhatsApp
+            </button>
+
+
+            <button
+              onclick="window.print()"
+              class="btn btn-ghost"
+            >
+              Imprimir / Salvar PDF
+            </button>
+
+
+          </div>
+
+        </div>
+
+
+      </section>
+
+
+
+      <!-- =================================
+           RODAPÉ
+      ================================== -->
+
+      <footer class="proposal-footer">
+
+        <span>
+          Documento gerado digitalmente.
         </span>
 
-      </div>
+
+        <span>
+          Desenvolvido com
+          <strong>PropostaFlow</strong>
+        </span>
+
+      </footer>
 
 
-      <hr>
+    </div>
 
-
-      <!-- TÍTULO -->
-      <div class="proposal-section">
-
-        <p class="eyebrow">
-          SERVIÇO / PROJETO
-        </p>
-
-        <h2 id="publicTitle">
-          Carregando...
-        </h2>
-
-      </div>
-
-
-      <!-- VALOR E PRAZO -->
-      <div class="proposal-highlight">
-
-        <div>
-
-          <small>
-            INVESTIMENTO
-          </small>
-
-          <strong id="publicValue">
-            R$ 0,00
-          </strong>
-
-        </div>
-
-
-        <div>
-
-          <small>
-            PRAZO
-          </small>
-
-          <strong id="publicDeadline">
-            -
-          </strong>
-
-        </div>
-
-      </div>
-
-
-      <!-- DESCRIÇÃO -->
-      <div class="proposal-section">
-
-        <p class="eyebrow">
-          DESCRIÇÃO
-        </p>
-
-        <p id="publicDescription">
-          Carregando...
-        </p>
-
-      </div>
-
-
-      <!-- OBSERVAÇÕES -->
-      <div class="proposal-section">
-
-        <p class="eyebrow">
-          OBSERVAÇÕES
-        </p>
-
-        <p id="publicNotes">
-          -
-        </p>
-
-      </div>
-
-
-      <!-- BOTÕES -->
-      <div class="proposal-public-actions">
-
-        <button
-          id="acceptProposal"
-          class="btn btn-primary"
-        >
-          ✓ Aceitar proposta
-        </button>
-
-
-        <button
-          id="rejectProposal"
-          class="btn btn-ghost"
-        >
-          ✕ Recusar
-        </button>
-
-
-        <button
-          id="whatsappProposal"
-          class="btn btn-ghost"
-        >
-          WhatsApp
-        </button>
-
-
-        <button
-          onclick="window.print()"
-          class="btn btn-ghost"
-        >
-          Imprimir / Salvar PDF
-        </button>
-
-      </div>
-
-    </section>
 
   </main>
 
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- =====================================
+       SCRIPTS
+  ====================================== -->
+
+  <script
+    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
+  ></script>
+
 
   <script src="js/supabase.js"></script>
 
+
   <script src="js/proposta-publica.js"></script>
+
 
 </body>
 
