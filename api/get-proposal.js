@@ -1,24 +1,14 @@
 module.exports = async function handler(req, res) {
 
-  // ==========================================
-  // PERMITIR APENAS GET
-  // ==========================================
-
   if (req.method !== "GET") {
     return res.status(405).json({
       error: "Método não permitido"
     });
   }
 
-
   try {
 
-    // ==========================================
-    // PEGAR TOKEN
-    // ==========================================
-
     const { token } = req.query;
-
 
     if (!token) {
       return res.status(400).json({
@@ -32,18 +22,16 @@ module.exports = async function handler(req, res) {
     // ==========================================
 
     const response = await fetch(
-      `${process.env.SUPABASE_URL}/rest/v1/proposals?token=eq.${encodeURIComponent(token)}&select=id,user_id,client_name,client_phone,title,value,deadline,description,notes,status,accepted_at`,
+      `${process.env.SUPABASE_URL}/rest/v1/proposals?token=eq.${encodeURIComponent(token)}&select=id,user_id,client_name,client_phone,title,value,deadline,description,notes,status,created_at,accepted_at`,
       {
         method: "GET",
 
         headers: {
-
           apikey:
             process.env.SUPABASE_SERVICE_ROLE_KEY,
 
           Authorization:
             `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`
-
         }
       }
     );
@@ -59,7 +47,6 @@ module.exports = async function handler(req, res) {
         "Erro ao buscar proposta:",
         propostas
       );
-
 
       return res.status(500).json({
         error:
@@ -85,7 +72,7 @@ module.exports = async function handler(req, res) {
 
 
     // ==========================================
-    // BUSCAR EMPRESA / PERFIL
+    // BUSCAR EMPRESA
     // ==========================================
 
     const profileResponse =
@@ -95,13 +82,11 @@ module.exports = async function handler(req, res) {
           method: "GET",
 
           headers: {
-
             apikey:
               process.env.SUPABASE_SERVICE_ROLE_KEY,
 
             Authorization:
               `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`
-
           }
         }
       );
@@ -118,7 +103,6 @@ module.exports = async function handler(req, res) {
         profiles
       );
 
-
       return res.status(500).json({
         error:
           "Erro ao buscar dados da empresa"
@@ -134,12 +118,10 @@ module.exports = async function handler(req, res) {
 
 
     // ==========================================
-    // RESPOSTA PÚBLICA
+    // RESPOSTA
     // ==========================================
 
     return res.status(200).json({
-
-      // PROPOSTA
 
       id:
         proposta.id,
@@ -167,6 +149,9 @@ module.exports = async function handler(req, res) {
 
       status:
         proposta.status,
+
+      created_at:
+        proposta.created_at,
 
       accepted_at:
         proposta.accepted_at,
